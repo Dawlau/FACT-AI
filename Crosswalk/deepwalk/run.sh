@@ -18,7 +18,7 @@ Phom=0.025
 
 for i in ''; do #'2' '3' '4' '5'; do
 	for Phet in 0.001; do #0.005 0.01 0.015; do # 0.001 0.005 0.01 0.015 0.02 0.025; do
-		filename=~/FACT-AI/Crosswalk/data/synth2/synthetic_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
+		filename=../data/synth2/synthetic_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
 		#method='unweighted'
 		#outfile=${filename}.embeddings_${method}_d${d}_$i
 		#echo ${i}'   '$method
