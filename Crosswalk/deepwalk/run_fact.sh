@@ -11,8 +11,11 @@ weighted=pch_0.9
 # Running on a subset of the rice_subset dataset.
 ## Set which experiment to be ran to true to toggle it.
 pmodified_experiment=false
-c_d_experiment=true
-rwl_bndry_exp_experiment=true
+c_d_experiment=false
+rwl_bndry_exp_experiment=false
+synthetic_experiment=false
+unweighted_experiment=false
+
 
 if [ "$pmodified_experiment" = true ]; then
   echo $pmodified_experiment
@@ -31,23 +34,10 @@ if [ "$pmodified_experiment" = true ]; then
                     --output $data/${dataset}/${dataset}.pmodified_${pmodified}_embeddings_${weighted}_d$d \
                     --pmodified $pmodified \
                     --sensitive-attr-file $data/${dataset}/${dataset}.attr
-    python deepwalk --format edgelist \
-                    --input $data/${dataset}/${dataset}.links \
-                    --max-memory-data-size 0 \
-                    --number-walks $num_walks \
-                    --representation-size $d \
-                    --walk-length 40 \
-                    --window-size 10 \
-                    --workers $num_workers \
-                    --output alaki.txt \
-                    --weighted $weighted \
-                    --pmodified $pmodified \
-                    --sensitive-attr-file $data/${dataset}/${dataset}.attr
   done
 elif [ "$c_d_experiment" = true ]; then
   ## Experimenting with different values of c and d
-  for c in 50 100 1000; do #2 3 5 7 10; do
-    # todo: figure out what c is
+  for c in 50 100 1000; do #2 3 5 7 10; do     # todo: figure out what c is
     for d in 32 64 92 128; do
       python deepwalk --format edgelist \
                       --input $data/${dataset}/${dataset}.links \
@@ -63,11 +53,10 @@ elif [ "$c_d_experiment" = true ]; then
     done
   done
 elif [ "$rwl_bndry_exp_experiment" = true ]; then
-  # todo: figure out these parameters
-  for rwl in 5 10 20; do
-    for bndry in 0.5 0.7 0.9; do
-      for exponent in '1.0' '2.0' '3.0' '4.0'; do
-        for bndrytype in 'bndry' 'revbndry'; do
+  for rwl in 5; do # 5 10 20
+    for bndry in 0.5; do # 0.5 0.7 0.9
+      for exponent in '2.0' '4.0'; do # '1.0' '2.0' '3.0' '4.0'
+        for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
           method='random_walk_'${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
           echo '   '
           echo $data/${dataset}/${dataset}'  '$method
@@ -86,59 +75,115 @@ elif [ "$rwl_bndry_exp_experiment" = true ]; then
       done
     done
   done
+elif [ "$synthetic_experiment" = true ]; then
+  nodes=500
+  Pred=0.7
+  Phom=0.025   # todo: phom/phet
+  synthetic=synth2
+  for i in ''; do #'2' '3' '4' '5'; do ???? what does i do?
+    for Phet in 0.001 0.005 0.01 0.015; do
+      filename=$data/$synthetic/synthetic_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
+      method='unweighted'
+      outfile=${filename}.embeddings_${method}_d${d}_$i
+      echo ${i}'   '$method
+      python deepwalk --format edgelist \
+                      --input ${filename}.links \
+                      --max-memory-data-size 0 \
+                      --number-walks $num_walks \
+                      --representation-size $d \
+                      --walk-length 40 \
+                      --window-size 10 \
+                      --workers $num_workers \
+                      --output $outfile \
+                      --weighted $method \
+                      --sensitive-attr-file ${filename}.attr
+      for rwl in 5 10 20; do
+        for bndry in 0.1 0.5 0.9; do
+          for exponent in '1.0' '2.0' '3.0' '4.0'; do
+            for bndrytype in 'bndry' 'revbndry'; do
+              method='random_walk_'${rwl}'_'${bndrytype}'_'${bndry}'_exp_'${exponent}
+              outfile=${filename}.embeddings_${method}_d${d}_$i
+              echo ${i}'   '$method
+              if test -f "$outfile"; then
+                echo "exists."
+              else
+                python deepwalk --format edgelist \
+                --input ${filename}.links \
+                --max-memory-data-size 0 \
+                --number-walks $num_walks \
+                --representation-size $d \
+                --walk-length 40 \
+                --window-size 10 \
+                --workers $num_workers \
+                --output $outfile \
+                --weighted $method \
+                --sensitive-attr-file ${filename}.attr
+              fi
+            done
+          done
+        done
+      done
+    done
+  done
+elif [ "$unweighted_experiment" = true ]; then
+  python deepwalk --format edgelist \
+                  --input $data/${dataset}/${dataset}.links \
+                  --max-memory-data-size 0 \
+                  --number-walks $num_walks \
+                  --representation-size $d \
+                  --walk-length 40 \
+                  --window-size 10 \
+                  --workers $num_workers \
+                  --output $data/${dataset}/${dataset}.embeddings_unweighted \
+                  --sensitive-attr-file $data/${dataset}/${dataset}.attr
 fi
 
-# todo: figure out these 5 params
+echo "Running last experiment"
+
+# synthetic 3 layers
 nodes=500
 Pred=0.7
+Phet=0.001
 Phom=0.025
-
+synthetic=synthetic_3layers
 for i in ''; do #'2' '3' '4' '5'; do ???? what does i do?
-	for Phet in 0.001 0.005 0.01 0.015; do
-		filename=synthetic/synthetic_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
-		method='unweighted'
-		outfile=${filename}.embeddings_${method}_d${d}_$i
-		echo ${i}'   '$method
-		python deepwalk --format edgelist \
-		                --input ${filename}.links \
-		                --max-memory-data-size 0 \
-		                --number-walks $num_walks \
-		                --representation-size $d \
-		                --walk-length 40 \
-		                --window-size 10 \
-		                --workers $num_workers \
-		                --output $outfile \
-		                --weighted $method \
-		                --sensitive-attr-file ${filename}.attr
-		for rwl in 5 10 20; do
-			for bndry in 0.1 0.5 0.9; do
-				for exponent in '1.0' '2.0' '3.0' '4.0'; do
-					for bndrytype in 'bndry' 'revbndry'; do
-						method='random_walk_'${rwl}'_'${bndrytype}'_'${bndry}'_exp_'${exponent}
-						outfile=${filename}.embeddings_${method}_d${d}_$i
-						echo ${i}'   '$method
-						if test -f "$outfile"; then
-							echo "exists."
-						else
-							python deepwalk --format edgelist \
-							--input ${filename}.links \
-							--max-memory-data-size 0 \
-							--number-walks $num_walks \
-							--representation-size $d \
-							--walk-length 40 \
-							--window-size 10 \
-							--workers $num_workers \
-							--output $outfile \
-							--weighted $method \
-							--sensitive-attr-file ${filename}.attr
-						fi
-					done
-				done
-			done
-		done
-	done
+  filename=$data/$synthetic/${synthetic}_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
+  method='unweighted'
+  echo "filename: ${filename}, method: ${method}"
+  python deepwalk --format edgelist \
+                  --input ${filename}.links \
+                  --max-memory-data-size 0 \
+                  --number-walks $num_walks \
+                  --representation-size $d \
+                  --walk-length 40 \
+                  --window-size 10 \
+                  --workers $num_workers \
+                  --output ${filename}.embeddings_${method}_d${d} \
+                  --weighted $method \
+                  --sensitive-attr-file ${filename}.attr
+  for rwl in 5; do # 5 10 20
+    for bndry in 0.5; do # 0.5 0.7 0.9
+      for exponent in '2.0' '4.0'; do # '1.0' '2.0' '3.0' '4.0'
+        for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
+          method='random_walk_'${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
+          echo ""
+          echo "filename: ${filename}, method: ${method}"
+          python deepwalk --format edgelist \
+                          --input ${filename}.links \
+                          --max-memory-data-size 0 \
+                          --number-walks $num_walks \
+                          --representation-size $d \
+                          --walk-length 40 \
+                          --window-size 10 \
+                          --workers $num_workers \
+                          --output ${filename}.embeddings_${method}_d${d} \
+                          --weighted $method \
+                         --sensitive-attr-file ${filename}.attr
+        done
+      done
+    done
+  done
 done
-
 
 
 #prb=0.7
