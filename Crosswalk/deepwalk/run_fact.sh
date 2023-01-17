@@ -1,51 +1,143 @@
-# Dimensionality of the latent space. Aliases: [representation-size, ]
-d=32
+# The dataset to be used in deepwalk to generate node representations.
+dataset='rice_subset'
 
 # Running parameters
 data=../data # Directory of the dataset.
+d=32 # Dimensionality of the latent space.
 num_workers=1 # Number of parallel processes. (default: 1)
-num_walks=10 # Number of random walks to start at each node (default: 10)
+num_walks=80 # Number of random walks to start at each node (default: 10)
+weighted=pch_0.9
 
-
-
-
-# The dataset to be used in deepwalk to generate node representations.
-dataset='rice_subset'
-python27 --version
 # Running on a subset of the rice_subset dataset.
-for pmodified in 0.2 0.5 0.7 0.9 1.0; do
-  # pmodified: Probability of using the modified graph (default: 1.0)
-  python27 deepwalk --format edgelist \
-                  --input $data/${dataset}/${dataset}.links \
-                  --max-memory-data-size 0 \
-                  --number-walks $num_walks \
-                  --representation-size $d \
-                  --walk-length 40 \
-                  --window-size 10 \
-                  --workers $num_workers \
-                  --output $data/${dataset}/${dataset}.pmodified_${pmodified}_embeddings_pch_0.9_d$d \
-                  --weighted pch_0.9  \
-                  --pmodified $pmodified \
-                  --sensitive-attr-file $data/${dataset}/${dataset}.attr
-#  python deepwalk --format edgelist \
-#                  --input $data/${dataset}/${dataset}.links \
-#                  --max-memory-data-size 0 \
-#                  --number-walks 160 \
-#                  --representation-size $d \
-#                  --walk-length 40 \
-#                  --window-size 10 \
-#                  --workers 30 \
-#                  --output alaki.txt \
-#                  --weighted pch_0.9 \
-#                  --pmodified $pmodified \
-#                  --sensitive-attr-file $data/${dataset}/${dataset}.attr
-done
+## Set which experiment to be ran to true to toggle it.
+pmodified_experiment=false
+c_d_experiment=true
+rwl_bndry_exp_experiment=true
 
-#for c in 50 100 1000; do #2 3 5 7 10; do
-#	for d in 32 64 92 128; do
-#		python deepwalk --format edgelist --input data/rice_subset.links --max-memory-data-size 0 --number-walks 80 --representation-size $d --walk-length 40 --window-size 10 --workers 30 --output data/rice_subset.embeddings_wconstant${c}_d$d --weighted constant_$c --sensitive-attr-file data/rice_subset.attr
-#	done
-#done
+if [ "$pmodified_experiment" = true ]; then
+  echo $pmodified_experiment
+  ## Experimenting with different values for p
+  for pmodified in 0.2 0.5 0.7 0.9 1.0; do
+    # pmodified: Probability of using the modified graph (default: 1.0)
+    python deepwalk --format edgelist \
+                    --input $data/${dataset}/${dataset}.links \
+                    --max-memory-data-size 0 \
+                    --number-walks $num_walks \
+                    --representation-size $d \
+                    --walk-length 40 \
+                    --window-size 10 \
+                    --workers $num_workers \
+                    --weighted $weighted  \
+                    --output $data/${dataset}/${dataset}.pmodified_${pmodified}_embeddings_${weighted}_d$d \
+                    --pmodified $pmodified \
+                    --sensitive-attr-file $data/${dataset}/${dataset}.attr
+    python deepwalk --format edgelist \
+                    --input $data/${dataset}/${dataset}.links \
+                    --max-memory-data-size 0 \
+                    --number-walks $num_walks \
+                    --representation-size $d \
+                    --walk-length 40 \
+                    --window-size 10 \
+                    --workers $num_workers \
+                    --output alaki.txt \
+                    --weighted $weighted \
+                    --pmodified $pmodified \
+                    --sensitive-attr-file $data/${dataset}/${dataset}.attr
+  done
+elif [ "$c_d_experiment" = true ]; then
+  ## Experimenting with different values of c and d
+  for c in 50 100 1000; do #2 3 5 7 10; do
+    # todo: figure out what c is
+    for d in 32 64 92 128; do
+      python deepwalk --format edgelist \
+                      --input $data/${dataset}/${dataset}.links \
+                      --max-memory-data-size 0 \
+                      --number-walks $num_walks \
+                      --representation-size $d \
+                      --walk-length 40 \
+                      --window-size 10 \
+                      --workers $num_workers \
+                      --output $data/${dataset}/${dataset}.embeddings_wconstant${c}_d$d \
+                      --weighted constant_$c \
+                      --sensitive-attr-file $data/${dataset}/${dataset}.attr
+    done
+  done
+elif [ "$rwl_bndry_exp_experiment" = true ]; then
+  # todo: figure out these parameters
+  for rwl in 5 10 20; do
+    for bndry in 0.5 0.7 0.9; do
+      for exponent in '1.0' '2.0' '3.0' '4.0'; do
+        for bndrytype in 'bndry' 'revbndry'; do
+          method='random_walk_'${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
+          echo '   '
+          echo $data/${dataset}/${dataset}'  '$method
+          python deepwalk --format edgelist \
+                          --input $data/${dataset}/${dataset}.links \
+                          --max-memory-data-size 0 \
+                          --number-walks $num_walks \
+                          --representation-size $d \
+                          --walk-length 40 \
+                          --window-size 10 \
+                          --workers $num_workers \
+                          --output $data/${dataset}/${dataset}.embeddings_${method}_d$d \
+                          --weighted $method \
+                          --sensitive-attr-file $data/${dataset}/${dataset}.attr
+        done
+      done
+    done
+  done
+fi
+
+# todo: figure out these 5 params
+nodes=500
+Pred=0.7
+Phom=0.025
+
+for i in ''; do #'2' '3' '4' '5'; do ???? what does i do?
+	for Phet in 0.001 0.005 0.01 0.015; do
+		filename=synthetic/synthetic_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
+		method='unweighted'
+		outfile=${filename}.embeddings_${method}_d${d}_$i
+		echo ${i}'   '$method
+		python deepwalk --format edgelist \
+		                --input ${filename}.links \
+		                --max-memory-data-size 0 \
+		                --number-walks $num_walks \
+		                --representation-size $d \
+		                --walk-length 40 \
+		                --window-size 10 \
+		                --workers $num_workers \
+		                --output $outfile \
+		                --weighted $method \
+		                --sensitive-attr-file ${filename}.attr
+		for rwl in 5 10 20; do
+			for bndry in 0.1 0.5 0.9; do
+				for exponent in '1.0' '2.0' '3.0' '4.0'; do
+					for bndrytype in 'bndry' 'revbndry'; do
+						method='random_walk_'${rwl}'_'${bndrytype}'_'${bndry}'_exp_'${exponent}
+						outfile=${filename}.embeddings_${method}_d${d}_$i
+						echo ${i}'   '$method
+						if test -f "$outfile"; then
+							echo "exists."
+						else
+							python deepwalk --format edgelist \
+							--input ${filename}.links \
+							--max-memory-data-size 0 \
+							--number-walks $num_walks \
+							--representation-size $d \
+							--walk-length 40 \
+							--window-size 10 \
+							--workers $num_workers \
+							--output $outfile \
+							--weighted $method \
+							--sensitive-attr-file ${filename}.attr
+						fi
+					done
+				done
+			done
+		done
+	done
+done
 
 
 
@@ -86,6 +178,7 @@ done
 #	done
 #done
 
+
 #filename='data/rice_subset/rice_subset'
 #for rwl in 5; do # 5 10 20; do
 #	for bndry in 0.5 0.7 0.9; do #0.2 0.5 0.7 0.9; do
@@ -103,8 +196,8 @@ done
 
 
 
+# different num wlks: 160 vs 80
 #python deepwalk --format edgelist --input data/${dataset}/${dataset}.links --max-memory-data-size 0 --number-walks 160 --representation-size $d --walk-length 40 --window-size 10 --workers 30 --output data/test/rice_subset.embeddings_pch_0.9_d${d}__2 --weighted pch_0.9 --sensitive-attr-file data/${dataset}/${dataset}.attr
-
 #python deepwalk --format edgelist --input data/${dataset}/${dataset}.links --max-memory-data-size 0 --number-walks 80 --representation-size $d --walk-length 40 --window-size 10 --workers 30 --output data/test/rice_subset.embeddings_pch_0.9_d${d}__1 --weighted pch_0.9 --sensitive-attr-file data/${dataset}/${dataset}.attr
 
 #for d in 64 92 128; do
