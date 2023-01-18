@@ -28,9 +28,6 @@ def read_sensitive_attr(sens_attr_file, emb):
 def plot_graph(embedding_filename, sensitive_attr_filename, res_file):
     emb, dim = read_embeddings(embedding_filename)
     sens_attr = read_sensitive_attr(sensitive_attr_filename, emb)
-    # todo for random walk embeddings, the sizes are different. fix this
-    print(len(emb))
-    print(len(sens_attr))
     assert len(emb) == len(sens_attr)
 
     n = len(emb)
@@ -52,13 +49,16 @@ def plot_graph(embedding_filename, sensitive_attr_filename, res_file):
 
 
 if __name__ == '__main__':
+    # Notes about results.
+    # - 3Layered datasets are missing with Phet values of 0.003, experiments performed with Phet of 0.001.
+    # - Added extra plots for the Twitter datasets
     matplotlib.rcParams['pdf.fonttype'] = 42
     matplotlib.rcParams['ps.fonttype'] = 42
 
     # Rice subset, unweighted
-    # plot_graph(embedding_filename='../data/rice_subset/rice_subset.embeddings_unweighted_d32',
-    #            sensitive_attr_filename='../data/rice_subset/rice_subset.attr',
-    #            res_file='../results/TSNE_rice_subset.unweighted.png')
+    plot_graph(embedding_filename='../data/rice_subset/rice_subset.embeddings_unweighted_d32',
+               sensitive_attr_filename='../data/rice_subset/rice_subset.attr',
+               res_file='../results/TSNE_rice_subset.unweighted.png')
 
     # Rice subset, CrossWalk with exp = 2.0
     plot_graph(embedding_filename='../data/rice_subset/rice_subset.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
@@ -66,72 +66,50 @@ if __name__ == '__main__':
                res_file='../results/TSNE_rice_subset.random_walk_5_bndry_0.5_exp_2.0.png')
 
     # Rice subset, CrossWalk with exp = 4.0
-    plot_graph(embedding_filename='../data/rice_subset/rice_subset.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
+    plot_graph(embedding_filename='../data/rice_subset/rice_subset.embeddings_random_walk_5_bndry_0.5_exp_4.0_d32',
                sensitive_attr_filename='../data/rice_subset/rice_subset.attr',
-               res_file='../results/TSNE_rice_subset.random_walk_5_bndry_0.5_exp_2.0.png')
+               res_file='../results/TSNE_rice_subset.random_walk_5_bndry_0.5_exp_4.0.png')
 
     # Synthetic dataset, unweighted
-    # plot_graph(embedding_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_unweighted_d32',
-    #            sensitive_attr_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr',
-    #            res_file='../results/TSNE_synthetic_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.png')
-    #
-    # # Synthetic dataset, CrossWalk with exp 0.4
-    # plot_graph(embedding_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32_',
-    #            sensitive_attr_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr',
-    #            res_file='../results/TSNE_synthetic_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.png')
-    #
-    # # Synthetic layered dataset, unweighted
-    # plot_graph(embedding_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_unweighted_d32',
-    #            sensitive_attr_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.attr',
-    #            res_file='../results/TSNE_synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.png')
-    #
-    # # Synthetic layered dataset, CrossWalk with exp = 0.2
-    # plot_graph(embedding_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
-    #            sensitive_attr_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.attr',
-    #            res_file='../results/TSNE_synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.png')
-    #
-    # # Synthetic layered dataset, CrossWalk with exp = 0.4
-    # plot_graph(embedding_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_4.0_d32',
-    #            sensitive_attr_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.attr',
-    #            res_file='../results/TSNE_synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_4.0.png')
-    #
-    #
+    plot_graph(embedding_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_unweighted_d32',
+               sensitive_attr_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr',
+               res_file='../results/TSNE_synthetic_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.png')
 
+    # Synthetic dataset, CrossWalk with exp 0.4
+    plot_graph(embedding_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32_',
+               sensitive_attr_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr',
+               res_file='../results/TSNE_synthetic_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.png')
 
-    # Unweighted embeddings - without CrossWalk
-    # emb_file = '../data/rice_subset/rice_subset.embeddings_unweighted_d32' + str(run_i)
-    # res_file = '../results/TSNE_rice_subset.unweighted.pdf'
+    # Synthetic layered dataset, unweighted
+    plot_graph(embedding_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_unweighted_d32',
+               sensitive_attr_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.attr',
+               res_file='../results/TSNE_synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.png')
 
-    # CrossWalk - b)
-    # emb_file = '../data/rice_subset/rice_subset.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32' + str(run_i)
-    # res_file = '../results/TSNE_rice_subset.random_walk_5_bndry_0.5_exp_2.0.pdf'
+    # Synthetic layered dataset, CrossWalk with exp = 0.2
+    plot_graph(embedding_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
+               sensitive_attr_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.attr',
+               res_file='../results/TSNE_synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.png')
 
-    # CrossWalk - c)
-    # emb_file = '../data/rice_subset/rice_subset.embeddings_random_walk_5_bndry_0.5_exp_4.0_d32' + str(run_i)
-    # res_file = '../results/TSNE_rice_subset.random_walk_5_bndry_0.5_exp_4.0.pdf'
-    # sens_attr_file = '../data/rice_subset/rice_sensitive_attr.txt'
+    # Synthetic layered dataset, CrossWalk with exp = 0.4
+    plot_graph(embedding_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_4.0_d32',
+               sensitive_attr_filename='../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.attr',
+               res_file='../results/TSNE_synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_4.0.png')
 
-    # Unweighted embeddings - synthetic layered dataset a)
-    # emb_file = '../data/synthetic/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_unweighted_d32' + str(run_i)
-    # res_file = '../results/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.pdf'
+    # Twitter datasets: extra -> unweighted, and CrossWalk with exp=2.0, 4.0
+    # Rice subset, unweighted
+    plot_graph(embedding_filename='../data/twitter/twitter.embeddings_unweighted_d32',
+               sensitive_attr_filename='../data/twitter/twitter.attr',
+               res_file='../results/TSNE_twitter.unweighted_d32.png')
 
-    # CrossWalk - synthetic dataset - old bndry 0.4
-    # emb_file = '../data/synthetic/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32' + str(run_i)
-    # res_file = '../results/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.pdf'
-    # sens_attr_file = '../data/synthetic/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr'
+    # Rice subset, CrossWalk with exp = 2.0
+    plot_graph(embedding_filename='../data/twitter/twitter.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
+               sensitive_attr_filename='../data/twitter/twitter.attr',
+               res_file='../results/TSNE_twitter.random_walk_5_bndry_0.5_exp_2.0.png')
 
-    # Unweighted embeddings - without CrossWalk - synthetic layered dataset
-    # emb_file = '../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_unweighted_d32' + str(run_i)
-    # res_file = '../results/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.pdf'
-
-    # CrossWalk - synthetic layered dataset - p=2.0
-    # emb_file = '../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32' + str(run_i)
-    # res_file = '../results/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.pdf'
-
-    # CrossWalk - synthetic layered dataset - p=4.0
-    # emb_file = '../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_4.0_d32' + str(run_i)
-    # res_file = '../results/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_4.0.pdf'
-    # sens_attr_file = '../data/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.01.attr'
+    # Rice subset, CrossWalk with exp = 4.0
+    plot_graph(embedding_filename='../data/twitter/twitter.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
+               sensitive_attr_filename='../data/twitter/twitter.attr',
+               res_file='../results/TSNE_twitter.random_walk_5_bndry_0.5_exp_4.0.png')
 
 
 
