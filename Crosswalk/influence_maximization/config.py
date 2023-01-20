@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 class infMaxConfig(object):
 	def __init__(self, args):
@@ -7,10 +8,10 @@ class infMaxConfig(object):
 		self.twitter      =  False
 		self.facebook     =  False
 		self.rice         =  False
-		self.rice_subset  =  True
+		self.rice_subset  =  False
 		self.sample_1000  =  False
 		self.sample_4000_connected_subset  =  False
-		self.synthetic    =  False
+		self.synthetic    =  True
 		self.synthetic_3g =  False
 		self.synthetic_3layers =  False
 
@@ -19,11 +20,11 @@ class infMaxConfig(object):
 			self.num_nodes = 500
 			self.p_with = .025
 
-			self.p_acrosses = [ 0.001, 0.025, 0.015, 0.005] # experiments for dataset params 
+			self.p_acrosses = [ 0.001, 0.025, 0.015, 0.005] # experiments for dataset params
 
-			self.p_across =.001 
+			self.p_across =.001
 
-			self.group_ratios = [0.5,0.55, 0.6, 0.65,0.7]  # experiments for dataset params 
+			self.group_ratios = [0.5,0.55, 0.6, 0.65,0.7]  # experiments for dataset params
 
 			self.group_ratio = 0.7
 
@@ -56,14 +57,14 @@ class infMaxConfig(object):
 		elif self.timing_test:
 
 			self.filename = 'results/timing_test'
-			self.num_nodes = 10 
+			self.num_nodes = 10
 			self.p_edges = 0.5
-			self.weight = .2 
+			self.weight = .2
 			self.gamma_a = 0.5
 
 		elif self.twitter:
 
-			self.weight = 0.01 # 0.1 
+			self.weight = 0.01 # 0.1
 			self.filename = 'twitter/twitter_combined_communities'
 
 		elif self.facebook:
@@ -95,9 +96,10 @@ class infMaxConfig(object):
 		elif self.synthetic:
 
 			self.weight = args.Pact
-			self.filename = 'synthetic/synthetic_n' + str(args.nodes) + '_Pred' + str(args.Pred) + \
+			# self.filename = 'synthetic/synthetic_n' + str(args.nodes) + '_Pred' + str(args.Pred) + \
+                                            # '_Phom' + str(args.Phom) + '_Phet' + str(args.Phet)
+			self.filename = os.path.expanduser("~") + '/FACT-AI/Crosswalk/data/synth2/synthetic_n' + str(args.nodes) + '_Pred' + str(args.Pred) + \
                                             '_Phom' + str(args.Phom) + '_Phet' + str(args.Phet)
-
 		elif self.synthetic_3layers:
 
 			self.weight = 0.03
@@ -113,4 +115,4 @@ class infMaxConfig(object):
 
 
 
-			
+

@@ -4,7 +4,7 @@ from IC import *
 import numpy as np
 import multiprocessing
 import utils as ut
-import math 
+import math
 
 
 def map_IC_timing(inp):
@@ -18,7 +18,7 @@ def map_IC_timing(inp):
     F_b = 0.0
     if v not in S:
         for j in range(R): # run R times Random Cascade
-        # for different objective change this priority selection 
+        # for different objective change this priority selection
             T, T_a, T_b = runIC_fair_timings((G,S + [v], gamma_a, gamma_b))
             priority_a += float(T_a)/R
             priority_b += float(T_b)/R
@@ -63,7 +63,7 @@ def map_fair_IC(inp):
         results = pool.map(runIC_fair, [(G,S) for i in range(R)])
         pool.close()
         pool.join()
-        for T,T_a,T_b in results: 
+        for T,T_a,T_b in results:
         #for j in range(R):
             #T, T_a, T_b = runIC_fair(G,S)
             influenced   += float(len(T)) / R
@@ -74,13 +74,13 @@ def map_fair_IC(inp):
 '''
 
 def map_select_next_seed_greedy(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v = inp
-        R = 500 # 100 #  
+        R = 500 # 100 #
         priority = 0.0
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_grouped = runIC_fair((G,S + [v]))
                 priority -= float(len(T))/R
 
@@ -88,44 +88,44 @@ def map_select_next_seed_greedy(inp):
 
 
 # def map_select_next_seed_greedy(inp):
-#     # selects greedily 
+#     # selects greedily
 #         G,S,v = inp
 #         R = 100
 #         priority = 0.0
 #         if v not in S:
 #             for j in range(R): # run R times Random Cascade
-#             # for different objective change this priority selection 
+#             # for different objective change this priority selection
 #                 T, T_a, T_b = runIC_fair((G,S + [v]))
 #                 priority -= float(len(T))/R
-# 
+#
 #         return (v,priority)
 
 
 def map_select_next_seed_log_greedy_prev(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v,gamma = inp
         R = 100
         priority = 0.0
         e = 1e-20
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_a, T_b = runIC_fair((G,S + [v]))
                 priority -= (math.log10(float(len(T_a)) + 1e-20) + gamma * math.log10(float(len(T_b)) + 1e-20))/R
 
         return (v,priority)
 
 def map_select_next_seed_log_greedy(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v,gamma = inp
         R = 100
         priority = 0.0
         e = 1e-20
         F_a = 0.0
-        F_b = 0.0 
+        F_b = 0.0
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_a, T_b = runIC_fair((G,S + [v]))
                 F_a += float(len(T_a))/R
                 F_b += float(len(T_b))/R
@@ -135,15 +135,15 @@ def map_select_next_seed_log_greedy(inp):
         return (v,priority)
 
 def map_select_next_seed_root_greedy(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v,gamma,beta = inp
         R = 100
         priority = 0.0
-        F_a = 0.0 
+        F_a = 0.0
         F_b = 0.0
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_a, T_b = runIC_fair((G,S + [v]))
                 F_a += float(len(T_a))/ R
                 F_b += float(len(T_b))/ R
@@ -153,15 +153,15 @@ def map_select_next_seed_root_greedy(inp):
         return (v,priority)
 
 def map_select_next_seed_root_majority_greedy(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v,gamma = inp
         R = 100
         priority = 0.0
-        F_a = 0.0 
+        F_a = 0.0
         F_b = 0.0
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_a, T_b = runIC_fair((G,S + [v]))
                 F_a += float(len(T_a))/ R
                 F_b += float(len(T_b))/ R
@@ -171,20 +171,20 @@ def map_select_next_seed_root_majority_greedy(inp):
         return (v,priority)
 
 def map_select_next_seed_norm_greedy(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v,gamma = inp
         R = 100
         priority = 0.0
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_a, T_b = runIC_fair((G,S))
                 priority -= ((float(len(T_a))**(1/gamma) + float(len(T_b))**(1/gamma))**gamma)/R
 
         return (v,priority)
 
 def map_select_next_seed_set_cover(inp):
-    # selects greedily 
+    # selects greedily
         G,S,v = inp
         R = 100
         priority = 0.0
@@ -192,9 +192,9 @@ def map_select_next_seed_set_cover(inp):
         priority_b = 0.0
         if v not in S:
             for j in range(R): # run R times Random Cascade
-            # for different objective change this priority selection 
+            # for different objective change this priority selection
                 T, T_a, T_b = runIC_fair((G, S + [v]))
-                priority += float(len(T))/R # not subratacting like other formulations adding a minus later 
+                priority += float(len(T))/R # not subratacting like other formulations adding a minus later
                 priority_a += float(len(T_a))/R
                 priority_b += float(len(T_b))/R
 
@@ -206,7 +206,7 @@ def generalGreedy_parallel_inf(G, k, p=.01):
     k -- number of initial nodes needed
     p -- propagation probability
     Output: S -- initial set of k nodes to propagate
-    parallel computation of influence of the node, but, probably, since the computation is not that complex 
+    parallel computation of influence of the node, but, probably, since the computation is not that complex
     '''
     #import time
     #start = time.time()
@@ -227,7 +227,7 @@ def generalGreedy_parallel_inf(G, k, p=.01):
                 pool = multiprocessing.Pool(multiprocessing.cpu_count()/2)
                 results = pool.map(map_IC, [(G,S + [v],p)]*R)
                 pool.close()
-                pool.join() 
+                pool.join()
                 s.add_task(v, priority - float(np.sum(results))/R)
                 #for j in range(R): # run R times Random Cascade
                      #[priority, count, task] = s.entry_finder[v]
@@ -256,7 +256,7 @@ def generalGreedy(G, k, p=.01):
             if v not in S:
                 s.add_task(v, 0) # initialize spread value
                 #[priority, count, task] = s.entry_finder[v]
-                for j in range(R): # run R times Random Cascade The gain of parallelizing isn't a lot as the one runIC is not very complex maybe for huge graphs 
+                for j in range(R): # run R times Random Cascade The gain of parallelizing isn't a lot as the one runIC is not very complex maybe for huge graphs
                     [priority, count, task] = s.entry_finder[v]
                     s.add_task(v, priority - float(len(runIC(G, S + [v], p)))/R) # add normalized spread value
 
@@ -286,15 +286,13 @@ def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=
     influenced_grouped = []
     seeds = []
     seed_range = []
+
     if type_algo == 1:
         filename = filename + f'_greedy_'
-
     elif type_algo == 2:
         filename = filename + f'_log_gamma_{gamma}_'
-
     elif type_algo == 3:
         filename = filename + f'_root_gamma_{gamma}_beta_{beta}_'
-
     elif type_algo == 4:
         filename = filename + f'_root_majority_gamma_{gamma}_beta_{beta}_'
 
@@ -483,15 +481,15 @@ def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=
 def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 0, type_algo = 1):
     ''' Finds initial seed set S using general greedy heuristic
     Input: G -- networkx Graph object
-    k -- fraction of population needs to be influenced in both groups 
+    k -- fraction of population needs to be influenced in both groups
     p -- propagation probability
     Output: S -- initial set of k nodes to propagate
     '''
     #import time
     #start = time.time()
     #R = 200 # number of times to run Random Cascade
-   
-   
+
+
     stats = ut.graph_stats(G, print_stats = False)
 
     if  type_algo == 1:
@@ -501,7 +499,7 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
     elif type_algo == 3:
             filename = filename + f'_set_cover_timings_reach_{budget}_gamma_a_{gamma_a}_gamma_b_{gamma_a}_'
 
-    
+
     reach = 0.0
     S = [] # set of selected nodes
     # add node to S if achieves maximum propagation for current chosen + this node
@@ -520,16 +518,16 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
             #ut.write_files(filename,influenced, influenced_a, influenced_b, seeds_a, seeds_b)
             print(influenced_a)
             print( "\n\n")
-            print(influenced_b)            
+            print(influenced_b)
             print(f" reach: {reach}")
             ut.plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
             return (influenced, influenced_a, influenced_b, seeds_a, seeds_b)
-        
+
     except FileNotFoundError:
         print( f'{filename} not Found ')
-        
+
     i = 0
-    while reach < 2*budget: # cannot parallellize 
+    while reach < 2*budget: # cannot parallellize
 
         pool = multiprocessing.Pool(multiprocessing.cpu_count()-1)
 
@@ -544,11 +542,11 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
         pool.join()
 
         s = PQ() # priority queue
-        for v,p,p_a,p_b in results: # 
+        for v,p,p_a,p_b in results: #
             s.add_task(v, -(min(p_a/stats['group_a'],budget)+min(p_b/stats['group_b'],budget)))
 
         node, priority = s.pop_item()
-        #priority = -priority # as the current priority is negative fraction 
+        #priority = -priority # as the current priority is negative fraction
         S.append(node)
 
         I,I_a, I_b = map_fair_IC((G,S))
@@ -558,17 +556,17 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
         S_red  = []
         S_blue = []
         group = G.nodes[node]['color']
-        
+
         for n in S:
             if G.nodes[n]['color'] == 'red':
                 S_red.append(n)
             else:
                 S_blue.append(n)
-        
-        seeds_a.append(S_red) # id's of the seeds so the influence can be recreated 
+
+        seeds_a.append(S_red) # id's of the seeds so the influence can be recreated
         seeds_b.append(S_blue)
 
-        #reach += -priority both are fine 
+        #reach += -priority both are fine
         reach_a = I_a / stats['group_a']
         reach_b = I_b / stats['group_b']
         reach = (min(reach_a, budget) + min(reach_b, budget))

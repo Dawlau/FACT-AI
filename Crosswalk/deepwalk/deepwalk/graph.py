@@ -291,7 +291,7 @@ def load_adjacencylist(file_, undirected=False, chunksize=10000, unchecked=True)
 def load_edgelist(file_, undirected=True, attr_file_name=None, test_links_ratio=0., test_links_file=None, train_links_file=None):
 
   G = Graph()
-
+  
   if attr_file_name is not None:
     G.attr = dict()
     with open(attr_file_name) as f:
@@ -469,6 +469,7 @@ def set_weights(G, method_):
   if method_ is None:
     return G
 
+  # print number of nodes that have neighbours only from the same class, and the number of nodes that are from one class and also have nodes from other classes
   if method_.startswith('get_stat'):
     cnt_rb = cnt_br = cnt_b = cnt_r = 0
     for v in G.keys():
@@ -494,19 +495,19 @@ def set_weights(G, method_):
     print('cnt_rb=', cnt_rb)
     print('cnt_br=', cnt_br)
 
-  if method_.startswith('expandar_'):
+  if method_.startswith('expandar_'): # expand graph?
     _expand(G)
     method_ = method_[9:]
 
-  if method_ == 'random':
+  if method_ == 'random': # does nothing
     G.edge_weights = method_
     return G
 
-  if method_.startswith('smartshortcut_'):
+  if method_.startswith('smartshortcut_'): # does nothing
     G.edge_weights = method_
     return G
 
-  if method_.startswith('prb_'):
+  if method_.startswith('prb_'): # does nothing
     G.edge_weights = method_
     # tmp = method_.split('_')
     # if len(len(tmp) > 5) and tmp[4] == 'wl':
@@ -517,7 +518,7 @@ def set_weights(G, method_):
     return G
 
 
-  if method_.startswith('fairwalk'):
+  if method_.startswith('fairwalk'): # apply fairwalk
     G.edge_weights = dict()
 
     for v in G:
@@ -540,7 +541,7 @@ def set_weights(G, method_):
 
     return G
 
-  if method_.startswith('random_walk'):
+  if method_.startswith('random_walk'): # apply crosswalk
     s_method = method_.split('_')
     l = int(s_method[2])
     assert( (s_method[3] in ['bndry', 'revbndry']) and (s_method[5] == 'exp'))
@@ -614,7 +615,7 @@ def set_weights(G, method_):
 
     return G
 
-  if method_.startswith('pch_'):
+  if method_.startswith('pch_'): # print the maximum walk distance
     G.edge_weights = method_
     G = _set_border_distances(G)
     for c, c_i in [('blue', 0), ('red', 1)]:
@@ -633,6 +634,9 @@ def set_weights(G, method_):
     return G
 
   if method_.startswith('constant_'):
+    # assign weight c to edges that connect the node to a class different than c
+    # assign weight 1 to edges that are from the same class as the node
+    # normalize the weights
     c = float(method_[9:])
     G.edge_weights = dict()
     for v in G.keys():
@@ -640,6 +644,7 @@ def set_weights(G, method_):
       sm = sum(tmp)
       G.edge_weights[v] = [w/sm for w in tmp]
   elif method_.startswith('rb_'):
+    # don't think this is relevant?
     s_ = method_.split('_')
     c_rb, c_br = float(s_[1]), float(s_[3])
     G.edge_weights = dict()

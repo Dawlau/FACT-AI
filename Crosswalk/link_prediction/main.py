@@ -47,11 +47,11 @@ if __name__ == '__main__':
         print('iter: ', iter)
 
         # filename = 'sample_4000_connected_subset/sample_4000_connected_subset'
-        filename = 'rice_subset/rice_subset'
+        filename = '../data/rice_subset/rice_subset'
         # emb_file = filename + '.embeddings_unweighted_d32_' + iter
         # emb_file = filename + '.embeddings_fairwalk_d32_' + iter
         # emb_file = filename + '.randomembedding_d32_' + iter
-        emb_file = filename + '.embeddings_random_walk_5_bndry_0.7_exp_2.0_d32_' + iter
+        emb_file = filename + '.pmodified__embeddings_fairwalk_d32'
         sens_attr_file = filename + '.attr'
         train_links_file = filename + '_' + iter + '_trainlinks'
         test_links_file = filename + '_' + iter + '_testlinks'

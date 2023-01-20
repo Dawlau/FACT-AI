@@ -82,6 +82,7 @@ class fairInfMaximization(infMaxConfig):
 
     def test_kmedoids(self, emb_filename, res_filename, budget):
 
+        print(emb_filename)
         print(res_filename)
 
         # stats = ut.graph_stats(self.G, print_stats=False)
@@ -175,7 +176,7 @@ if __name__ == '__main__':
         tmp_filename = 'rice_subset'
         embfilename = 'facebook/' + tmp_filename + '.embeddings_'
         resfilename = 'rsults/' + tmp_filename
-        
+
         for rwl in [5]:  # [5, 10, 20]:
             for exponent in ['6.0', '8.0', '4.0', '2.0']:  # [0.5, '1.0', '2.0']:
                 for bndry in [0.9, 0.8, 0.7, 0.6, 0.5]:  # [0.2, 0.5, 0.7, 0.9]:
@@ -210,7 +211,7 @@ if __name__ == '__main__':
         #    resfilename = 'rsults/' + tmp_filename + '_pmodified_' + str(pm) + '_Pact' + str(args.Pact)
         #    fair_inf.test_kmedoids(embfilename + method + '_' + d, resfilename + '_emb_' + method + '_' + d, budget=40)
 
-        
+
         for i in ['1','2','3','4','5']:
             for rwl in [5]:  # [5, 10, 20]:
                 for exponent in ['4.0']: #['6.0', '8.0', '4.0', '2.0']:  # [0.5, '1.0', '2.0']:
@@ -225,7 +226,7 @@ if __name__ == '__main__':
                                 continue
                             fair_inf.test_kmedoids(embfilename + method + '_' + d + '_' + i, resfilename + '_emb_' + method + '_' + d + '_' + i,
                                                budget=40)
-        
+
 
             #fair_inf.test_greedy(resfilename, budget=40)
             #method = 'unweighted'
@@ -250,13 +251,13 @@ if __name__ == '__main__':
         #for method in ['unweighted', 'constant_100', 'constant_1000', 'prb_0.5_pbr_0.5', 'prb_0.7_pbr_0.7', 'prb_0.9_pbr_0.9', 'pch_0.5', 'pch_0.7', 'pch_0.9', 'random']:
         #for method in ['random_walk_5']:
         #    fair_inf.test_kmedoids(embfilename + method + '_' + d, resfilename + '_emb_' + method + '_' + d, budget=40)
-    
+
         #method = 'pch_0.9'
         #for pm in [0.2, 0.5, 0.7, 0.9, '1.0']:
         #    embfilename = 'synthetic/' + tmp_filename + '.pmodified_' + str(pm) + '_embeddings_'
         #    resfilename = 'rsults/' + tmp_filename + '_pmodified_' + str(pm) + '_Pact' + str(args.Pact)
         #    fair_inf.test_kmedoids(embfilename + method + '_' + d, resfilename + '_emb_' + method + '_' + d, budget=40)
-    
+
         for i in ['_1', '_2', '_3', '_4', '_5']:
             for rwl in [5]: #[5, 10, 20]:
                 for bndry in [0.7, 0.3]: #[0.5, 0.6, 0.7, 0.8, 0.9]: #[0.2, 0.5, 0.7, 0.9]:
@@ -269,8 +270,8 @@ if __name__ == '__main__':
                                 continue
                             print('===========   ', i, '    ', method)
                             fair_inf.test_kmedoids(embfilename + method + '_' + d + i, resfilename + '_emb_' + method + '_' + d + i, budget=40)
-    
-    
+
+
             # fair_inf.test_greedy(resfilename, budget=40)
             # method = 'unweighted'
             # fair_inf.test_kmedoids(embfilename + method + '_' + d + i, resfilename + '_emb_' + method + '_' + d + i, budget=40)
@@ -301,19 +302,19 @@ if __name__ == '__main__':
 
     if False:
 
-        base_embfile = 'sample/sample_4000_connected_subset/sample_4000_connected_subset' # 'facebook/rice_subset' # 'synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.003' # 
-        base_resfile = 'rsults/sample_4000_connected_subset_0.01' # 'rsults/rice_subset' # 'rsults/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.003_Pact0.03' # 
+        base_embfile = 'sample/sample_4000_connected_subset/sample_4000_connected_subset' # 'facebook/rice_subset' # 'synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.003' #
+        base_resfile = 'rsults/sample_4000_connected_subset_0.01' # 'rsults/rice_subset' # 'rsults/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.003_Pact0.03' #
 
         fair_inf = fairInfMaximization(args=args)
-        
+
         d = 'd32'
-        
-	
+
+
         for i in ['1','2','3','4','5']:
             '''
             method = 'unweighted'
             embfilename = base_embfile + '.embeddings_'
-            resfilename = base_resfile 
+            resfilename = base_resfile
             print(i, '   ', method)
             if os.path.isfile(resfilename + '_emb_' + method + '_' + d + '_' + i + '_results.txt'):
                 print('      exists')
@@ -349,15 +350,15 @@ if __name__ == '__main__':
 
     if False:
         fair_inf = fairInfMaximization(args=args)
-        
+
         d = 'd32'
-        
+
         #fair_inf.test_kmedoids('sample/sample_4000.embeddings_unweighted_' + d,
         #                                  'rsults/sample_4000' + '_emb_unweighted_' + d, budget=40)
 
         #fair_inf.test_kmedoids('facebook/rice.embeddings_' + 'random' + '_' + d,
         #                            'rsults/rice_emb_' + 'random' + '_' + d, budget=40)
-        
+
         #for pm in [0.2, 0.5, 0.7, 0.9, '1.0']:
         #    w = 'pch_0.9'
         #    fair_inf.test_kmedoids('facebook/rice.pmodified_' +  str(pm) + '_embeddings_' + w + '_' + d,
@@ -421,7 +422,7 @@ if __name__ == '__main__':
 
     if False:
         fair_inf = fairInfMaximization(args=args)
-        
+
         method = 'unweighted'
         print('\n\n\n', method)
         embfilename = 'facebook/rice_subset.lineorder1embeddings_' + method + '_d32'
@@ -444,7 +445,7 @@ if __name__ == '__main__':
 
     if False:
         fair_inf = fairInfMaximization(args=args)
-        
+
         '''
         method = 'unweighted'
         print('\n\n\n', method)
@@ -507,12 +508,12 @@ if __name__ == '__main__':
 
     if True:
         fair_inf = fairInfMaximization(args=args)
-        
+
         d = 'd32'
-        
-        for i in ['1','2','3','4','5']:
-            embfilename = 'fairwalknode2vec_embeddings/rice-node2vec_' + i
-            resfilename = 'fairwalknode2vec_results/rice-node2vec_' + i
+
+        for i in ['']:#['1','2','3','4','5']:
+            embfilename = '/home/andreib/FACT-AI/Crosswalk/data/synth2/synth2.pmodified__embeddings_random_walk_5_bndry_0.1_exp_5.0_d32' + i
+            resfilename = 'results/synth' + i
             print(i, ' ----')
             fair_inf.test_kmedoids(embfilename, resfilename, budget=40)
 
