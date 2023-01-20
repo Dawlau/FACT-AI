@@ -55,6 +55,8 @@ def visualize_walks(dataset, embedding, walks_visualised):
 
 
 if __name__ == '__main__':
+    # dependency https://pypi.org/project/pyvis/: pip install pyvis
+    # run this while in directory /visualisation
     for dataset in DATASETS:
         visualize_walks(dataset, 'unweighted_d32', 1)
         visualize_walks(dataset, 'random_walk_5_bndry_0.5_exp_2.0_d32', 1)

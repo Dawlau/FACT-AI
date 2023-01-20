@@ -76,7 +76,7 @@ if __name__ == '__main__':
                res_file='../results/TSNE_synthetic_n500_Pred0.7_Phom0.025_Phet0.001.unweighted.png')
 
     # Synthetic dataset, CrossWalk with exp 0.4
-    plot_graph(embedding_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32_',
+    plot_graph(embedding_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32',
                sensitive_attr_filename='../data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr',
                res_file='../results/TSNE_synthetic_n500_Pred0.7_Phom0.025_Phet0.001.random_walk_5_bndry_0.5_exp_2.0.png')
 
