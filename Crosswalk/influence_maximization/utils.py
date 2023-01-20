@@ -30,7 +30,7 @@ def load_graph(filename, p_with, p_across,  group_ratio ,num_nodes ):
 				v = int(edges_str[1])
 				weight = float(edges_str[2])
 				G.add_edge(u,v, weight = weight)
-		f.close()       
+		f.close()
     # Store configuration file values
 	except FileNotFoundError:
 		print(f"File not found at {filename}, building new graph...")
@@ -78,7 +78,7 @@ def graph_stats(G, print_stats =True):
 	stats['weights_across'] = w_across / edges_across
 	if print_stats:
 		print(f'\n \n Red Nodes: {num_a}, Blue Nodes: {num_b}, edges total = {edges_a / 2 + edges_b / 2 +edges_across / 2} edges_within a: {edges_a / 2}, edges_within_b {edges_b / 2}, edges_across {edges_across / 2}, average degree a: {edges_a / num_a}, average degree b: {edges_b / num_b}, weights within red {w_a_within / edges_a}, weights within b: {w_b_within / edges_b}, weights accross: {w_across / edges_across} \n \n \n ')
-	return stats 
+	return stats
 
 def write_files(filename, num_influenced, num_influenced_grouped, seeds):
 	'''
@@ -140,8 +140,8 @@ def write_files(filename, num_influenced, num_influenced_grouped, seeds):
 
 def read_files(filename):
 	'''
-	returns num_influenced, num_influenced_a, num_influenced_b -> list 
-		  and seeds_a list of lists i.e. actual id's of the seeds chosen 
+	returns num_influenced, num_influenced_a, num_influenced_b -> list
+		  and seeds_a list of lists i.e. actual id's of the seeds chosen
 		      seeds_b list of lists
 
 	'''
@@ -160,7 +160,7 @@ def read_files(filename):
 
 		S_a,S_b = residue.split(';')
 		S_a_list = []
-		
+
 		if S_a != '':
 			S_a_list = list(map(int,S_a.split(',')))
 		seeds_a.append(S_a_list)
@@ -176,7 +176,7 @@ def read_files(filename):
 
 def plot_influence(influenced_a, influenced_b, num_seeds, filename , population_a, population_b, num_seeds_a , num_seeds_b):
 
-	
+
 	# total influence
 	fig = plt.figure(figsize=(6,4))
 	plt.plot(np.arange(1, num_seeds + 1),list(map(add,influenced_a,influenced_b)),'g+')
@@ -185,7 +185,7 @@ def plot_influence(influenced_a, influenced_b, num_seeds, filename , population_
 	#plt.legend(loc='best')
 	plt.savefig(filename + '_total_influenced.png',bbox_inches='tight')
 	plt.close(fig)
-	# total influence fraction 
+	# total influence fraction
 	fig = plt.figure(figsize=(6,4))
 	plt.plot(np.arange(1, num_seeds + 1),np.asarray(list(map(add,influenced_a,influenced_b)))/(population_a + population_b),'g+')
 	plt.xlabel('Number of Seeds')
@@ -203,7 +203,7 @@ def plot_influence(influenced_a, influenced_b, num_seeds, filename , population_
 	plt.savefig(filename + '_group_influenced.png',bbox_inches='tight')
 	plt.close(fig)
 
-	# fraction group influenced 
+	# fraction group influenced
 	fig = plt.figure(figsize=(6,4))
 	plt.plot(np.arange(1, num_seeds + 1), np.asarray(influenced_a) / population_a, 'r+', label='Group A')
 	plt.plot(np.arange(1, num_seeds + 1), np.asarray(influenced_b) / population_b,'b.', label='Group B')
@@ -213,7 +213,7 @@ def plot_influence(influenced_a, influenced_b, num_seeds, filename , population_
 	plt.savefig(filename + '_fraction_group_influenced.png',bbox_inches='tight')
 	plt.close(fig)
 
-	# Seeds group memeber ship 
+	# Seeds group memeber ship
 	#fig = plt.figure(figsize=(6,4))
 	fig, ax = plt.subplots(figsize=(8,4))
 	bar_width = 0.35
@@ -246,30 +246,30 @@ def plot_influence_diff(influenced_a_list, influenced_b_list, num_seeds, labels,
 	index = np.arange(1, num_seeds + 1)
 	for i, (influenced_a, influenced_b) in enumerate(zip (influenced_a_list, influenced_b_list)):
 		ax.plot(index, (np.asarray(influenced_a) + np.asarray(influenced_b))/(population_a + population_b), label=labels[i], ls= '-', alpha=0.5)
-		
+
 
 	legend = ax.legend(loc='upper right', shadow=True, fontsize='x-large')
 	plt.legend(bbox_to_anchor=(1.04,1), loc="upper left")
 
 
-	
+
 	plt.xlabel('Number of Seeds')
 	plt.ylabel('Fraction of Influenced Nodes (F(S))')
 	plt.savefig(filename+'_total_influenced.png',bbox_inches='tight')
 	plt.close(fig)
 
-	# comparison abs difference 
+	# comparison abs difference
 	fig, ax = plt.subplots(figsize=(8, 6), dpi= 80)
 	index = np.arange(1, num_seeds + 1)
 	for i, (influenced_a, influenced_b) in enumerate(zip(influenced_a_list, influenced_b_list)):
 		ax.plot(index, np.abs(np.asarray(influenced_a)/population_a - np.asarray(influenced_b)/population_b), label=labels[i], ls= '-', alpha=0.5)
-		
+
 
 	legend = ax.legend(loc='upper right', shadow=True, fontsize='x-large')
 	plt.legend(bbox_to_anchor=(1.04,1), loc="upper left")
 
 
-	
+
 	plt.xlabel('Number of Seeds')
 	plt.ylabel('Absolute difference of Influenced Nodes (|Fa - Fb|)')
 	plt.savefig(filename+'_difference_total_influenced.png',bbox_inches='tight')
@@ -294,11 +294,11 @@ def load_random_graph(filename, n,p,w):
 				v = int(edges_str[1])
 				weight = float(edges_str[2])
 				G.add_edge(u,v, weight = weight)
-		f.close()   
+		f.close()
 	except FileNotFoundError:
 		print(f"File not found at {filename}, building new graph...")
 		G = get_random_graph(filename+'.txt', n,p,w)
-	return G 
+	return G
 
 def save_graph(filename,G):
 	if filename:
@@ -312,21 +312,21 @@ def save_graph(filename,G):
 		print("saved")
 
 def get_random_graph(filename,n,p,w):
-	
+
 	G = nx.binomial_graph(n, p)
-	color = 'blue' # all nodes are one color 
+	color = 'blue' # all nodes are one color
 	nx.set_node_attributes(G, color, 'color')
 	nx.set_edge_attributes(G, w, 'weight')
-	
+
 	#save_graph(filename, G)
 
-	return G 
+	return G
 
 
 def get_twitter_data(filename,w = None, save = False	):
 	'''
-	reads twitter data, makes bipartition and assign group memebership 
-	with constant weights of infection 
+	reads twitter data, makes bipartition and assign group memebership
+	with constant weights of infection
 	'''
 
 	f = None
@@ -348,25 +348,25 @@ def get_twitter_data(filename,w = None, save = False	):
 				v = int(edges_str[1])
 				weight = float(edges_str[2])
                                 #if w is not None:
-				if False: 
+				if False:
 					DG.add_edge(u,v, weight = w)
-				else: 
+				else:
 					DG.add_edge(u,v, weight = weight)
-		f.close() 
-		
+		f.close()
+
 	except FileNotFoundError:
 		#
-		print(" Making graph ") 
+		print(" Making graph ")
 		f = open('twitter/twitter_combined.txt', 'r')
 		DG = nx.DiGraph()
 
 		for line in f:
-		    node_a, node_b = line.split()
-		    DG.add_nodes_from([node_a,node_b])
-		    DG.add_edges_from([(node_a, node_b)])
+			node_a, node_b = line.split()
+			DG.add_nodes_from([node_a,node_b])
+			DG.add_edges_from([(node_a, node_b)])
 
-		    DG[node_a][node_b]['weight'] = w 
-		
+			DG[node_a][node_b]['weight'] = w
+
 		print("done with edges and weights ")
 
 		G_a , G_b = community.kernighan_lin_bisection(DG.to_undirected())
@@ -376,15 +376,15 @@ def get_twitter_data(filename,w = None, save = False	):
 			DG.nodes[n]['color'] = 'blue'
 
 		save_graph(filename, DG)
-	 
+
 
 	return DG
 
 
 def get_facebook_data(filename,w = None, save = False):
 	'''
-	reads twitter data, makes bipartition and assign group memebership 
-	with constant weights of infection 
+	reads twitter data, makes bipartition and assign group memebership
+	with constant weights of infection
 	'''
 	f = None
 	G = None
@@ -406,13 +406,13 @@ def get_facebook_data(filename,w = None, save = False):
 				weight = float(edges_str[2])
 				if w is not None:
 					G.add_edge(u,v, weight = w)
-				else: 
+				else:
 					G.add_edge(u,v, weight = weight)
-		f.close() 
-		
+		f.close()
+
 	except FileNotFoundError:
 		#
-		print(" Making graph ") 
+		print(" Making graph ")
 
 		G = facebook_circles_graph(filename, w)
 

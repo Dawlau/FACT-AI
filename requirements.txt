@@ -1,0 +1,17 @@
+tensorboard
+tabulate
+tqdm
+pillow
+notebook
+jupyterlab
+matplotlib
+seaborn
+ipywidgets
+networkx
+numpy
+scikit-learn
+pandas
+pickle-mixin
+gensim
+scikit-learn-extra
+psutil

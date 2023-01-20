@@ -1,12 +1,15 @@
 # The dataset to be used in deepwalk to generate node representations.
-dataset='rice_subset'
+dataset='twitter'
 
 # Running parameters
 data=../data # Directory of the dataset.
 d=32 # Dimensionality of the latent space.
 num_workers=1 # Number of parallel processes. (default: 1)
 num_walks=80 # Number of random walks to start at each node (default: 10)
-weighted=pch_0.9
+# weighted=fairwalk
+# weighted=unweighted
+# pmodified=4
+weighted=random_walk_5_bndry_0.7_exp_4.0
 
 # Running on a subset of the rice_subset dataset.
 ## Set which experiment to be ran to true to toggle it.
@@ -15,6 +18,21 @@ c_d_experiment=false
 rwl_bndry_exp_experiment=false
 synthetic_experiment=false
 unweighted_experiment=false
+
+python deepwalk --format edgelist \
+                --input $data/${dataset}/sample_4000.links \
+                --max-memory-data-size 0 \
+                --number-walks $num_walks \
+                --representation-size $d \
+                --walk-length 40 \
+                --window-size 10 \
+                --workers $num_workers \
+                --weighted $weighted  \
+                --output $data/${dataset}/${dataset}.pmodified_${pmodified}_embeddings_${weighted}_d$d \
+                --sensitive-attr-file $data/${dataset}/sample_4000.attr \
+                # --sensitive-attr-file $data/${dataset}/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005.attr \
+                # --sensitive-attr-file $data/${dataset}/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr \
+                # --sensitive-attr-file $data/${dataset}/${dataset}.attr \
 
 
 if [ "$pmodified_experiment" = true ]; then
@@ -138,52 +156,52 @@ elif [ "$unweighted_experiment" = true ]; then
                   --sensitive-attr-file $data/${dataset}/${dataset}.attr
 fi
 
-echo "Running last experiment"
+# echo "Running last experiment"
 
 # synthetic 3 layers
-nodes=500
-Pred=0.7
-Phet=0.001
-Phom=0.025
-synthetic=synthetic_3layers
-for i in ''; do #'2' '3' '4' '5'; do ???? what does i do?
-  filename=$data/$synthetic/${synthetic}_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
-  method='unweighted'
-  echo "filename: ${filename}, method: ${method}"
-  python deepwalk --format edgelist \
-                  --input ${filename}.links \
-                  --max-memory-data-size 0 \
-                  --number-walks $num_walks \
-                  --representation-size $d \
-                  --walk-length 40 \
-                  --window-size 10 \
-                  --workers $num_workers \
-                  --output ${filename}.embeddings_${method}_d${d} \
-                  --weighted $method \
-                  --sensitive-attr-file ${filename}.attr
-  for rwl in 5; do # 5 10 20
-    for bndry in 0.5; do # 0.5 0.7 0.9
-      for exponent in '2.0' '4.0'; do # '1.0' '2.0' '3.0' '4.0'
-        for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
-          method='random_walk_'${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
-          echo ""
-          echo "filename: ${filename}, method: ${method}"
-          python deepwalk --format edgelist \
-                          --input ${filename}.links \
-                          --max-memory-data-size 0 \
-                          --number-walks $num_walks \
-                          --representation-size $d \
-                          --walk-length 40 \
-                          --window-size 10 \
-                          --workers $num_workers \
-                          --output ${filename}.embeddings_${method}_d${d} \
-                          --weighted $method \
-                         --sensitive-attr-file ${filename}.attr
-        done
-      done
-    done
-  done
-done
+# nodes=500
+# Pred=0.7
+# Phet=0.001
+# Phom=0.025
+# synthetic=synthetic_3layers
+# for i in ''; do #'2' '3' '4' '5'; do ???? what does i do?
+#   filename=$data/$synthetic/${synthetic}_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
+#   method='unweighted'
+#   echo "filename: ${filename}, method: ${method}"
+#   python deepwalk --format edgelist \
+#                   --input ${filename}.links \
+#                   --max-memory-data-size 0 \
+#                   --number-walks $num_walks \
+#                   --representation-size $d \
+#                   --walk-length 40 \
+#                   --window-size 10 \
+#                   --workers $num_workers \
+#                   --output ${filename}.embeddings_${method}_d${d} \
+#                   --weighted $method \
+#                   --sensitive-attr-file ${filename}.attr
+#   for rwl in 5; do # 5 10 20
+#     for bndry in 0.5; do # 0.5 0.7 0.9
+#       for exponent in '2.0' '4.0'; do # '1.0' '2.0' '3.0' '4.0'
+#         for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
+#           method='random_walk_'${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
+#           echo ""
+#           echo "filename: ${filename}, method: ${method}"
+#           python deepwalk --format edgelist \
+#                           --input ${filename}.links \
+#                           --max-memory-data-size 0 \
+#                           --number-walks $num_walks \
+#                           --representation-size $d \
+#                           --walk-length 40 \
+#                           --window-size 10 \
+#                           --workers $num_workers \
+#                           --output ${filename}.embeddings_${method}_d${d} \
+#                           --weighted $method \
+#                          --sensitive-attr-file ${filename}.attr
+#         done
+#       done
+#     done
+#   done
+# done
 
 
 #prb=0.7
@@ -252,7 +270,7 @@ done
 #for dataset in 'rice_subset'; do # 'sample_1000' 'sample_4000'; do
 #	python deepwalk --format edgelist --input data/${dataset}/${dataset}.links --max-memory-data-size 0 --number-walks 80 --representation-size $d --walk-length 40 --window-size 10 --workers 30 --output data/${dataset}/${dataset}.embeddings_random_d$d --weighted random --sensitive-attr-file data/${dataset}/${dataset}.attr
 #for psc in 0.9 0.7 0.5 0.2; do
-#	echo $dataset	
+#	echo $dataset
 #	python deepwalk --format edgelist --input data/${dataset}/${dataset}.links --max-memory-data-size 0 --number-walks 80 --representation-size $d --walk-length 40 --window-size 10 --workers 30 --output data/${dataset}/${dataset}.embeddings_smartshortcut_${psc}_d$d --weighted smartshortcut_${psc} --sensitive-attr-file data/${dataset}/${dataset}.attr
 #done
 #	python deepwalk --format edgelist --input data/${dataset}/${dataset}.links --max-memory-data-size 0 --number-walks 80 --representation-size $d --walk-length 40 --window-size 10 --workers 30 --output data/${dataset}/${dataset}.embeddings_prb_${prb}_pbr_${pbr}_d$d --weighted prb_${prb}_pbr_${pbr} --sensitive-attr-file data/${dataset}/${dataset}.attr

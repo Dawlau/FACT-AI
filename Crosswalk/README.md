@@ -13,7 +13,7 @@ Directories 'influene_maximization', 'classifier' and 'link_prediction' contain 
 
 
 # Notes about the implementation details
-###### About CrossWalk paper. 
+###### About CrossWalk paper.
 The authors first apply the algorithm to learn node representations, using DeepWalk and Node2Vec in: synthetic networks, Rice-Facebook and a Twitter subset.
 Then, various graph algorithms are applied on the node representations, including influence maximization, node classification, and link prediction.
 
@@ -24,7 +24,7 @@ The normalized transition probabilities p_ij between nodes i and j can be (in a 
 The fairness metric used in the paper is **Disparity**. For enhancing fairness of an algorithm, the goal is to have a lower disparity score.
 Intuition is to modify the edge weights, so that when for producing node embeddings by a random walk algorithm, the performance of the algorithm on the produced representation has a higher fairness and a smaller discrepancy on different groups.
 
-Thus, the following problem flow is considered: 
+Thus, the following problem flow is considered:
 
 **Original graph: G &rarr; CrossWalk: G' &rarr; Random walk algorithm: RW &rarr; Node representations &rarr; Algorithm A &rarr; Performance of A on graph: Q**
 
@@ -39,8 +39,17 @@ The re-weighting biases random walks (initiated) within a given group towards vi
 
 **deepwalk/run_fact.sh**
 
-Options of the deepwalk command: $ python deepwalk --help   
+Options of the deepwalk command: $ python deepwalk --help
 
 d: dimensionality of the latent space for the node representation.
 
 
+###### Choosing between Node2Vec and Skipgram
+
+In order to choose between Node2Vec and Skipgram, you have to satisfy the following constraint:
+
+```
+num_walks = len(G.nodes()) * args.number_walks
+data_size = num_walks * args.walk_length
+data_size < args.max_memory_data_size: if this is true, then Node2Vec will be run, otherwise the script will use Skipgram
+```

@@ -512,8 +512,8 @@ if __name__ == '__main__':
         d = 'd32'
 
         for i in ['']:#['1','2','3','4','5']:
-            embfilename = '/home/andreib/FACT-AI/Crosswalk/data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.embeddings_random_walk_5_bndry_0.1_exp_5.0_d32_' + i
-            resfilename = 'results/synth2' + i
+            embfilename = '/home/andreib/FACT-AI/Crosswalk/data/synth2/synth2.pmodified__embeddings_random_walk_5_bndry_0.1_exp_5.0_d32' + i
+            resfilename = 'results/synth' + i
             print(i, ' ----')
             fair_inf.test_kmedoids(embfilename, resfilename, budget=40)
 
