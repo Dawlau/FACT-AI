@@ -41,7 +41,7 @@ if [ "$ABLATION" = true ]; then
         done
     done
     # runs the python classification file with ablation
-    python3 ../classifier/main.py --ablation True --nfiles $indices
+    python3 ../classifier/main_fixed.py --ablation True --nfiles $indices
 else
     for method in 'random_walk_5_bndry_0.5_exp_2.0' 'unweighted' 'fairwalk'; do
         for i in $(seq 1 $indices); do
@@ -59,5 +59,5 @@ else
             done
         done
     # runs the python classification file on the created files
-    python3 ../classifier/main.py --nfiles $indices
+    python3 ../classifier/main_fixed.py --nfiles $indices
 fi
