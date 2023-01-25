@@ -1,31 +1,52 @@
-nodes=500
-Pred=0.6
-Pblue=0.25
+datasets=("rice_subset" "synth2" "synth3" "twitter")
+data=../data
+budget=40
 
-Prr=0.025
-Pbb=0.025
-Pgg=0.025
+declare -A dataset_to_alpha=(["rice_subset"]=0.5 ["synth2"]=0.7 ["synth3"]=0.7 ["twitter"]=0.5)
+declare -A dataset_to_p=(["rice_subset"]=4.0 ["synth2"]=4.0 ["synth3"]=4.0 ["twitter"]=2.0)
 
-Pact=0.03
+for dataset in ${datasets[@]}; do
 
-# for PrbPrg in '0.001_0.0005'; do # '0.001_0.0005' '0.005_0.0025' '0.01_0.005' '0.015_0.0075' '0.02_0.01' '0.025_0.0125'; do
-# 	Prb=${PrbPrg%_*}
-# 	Prg=${PrbPrg#*_}
-# 	Pbg=$Prg
-# 	python fairinfMaximization.py --nodes $nodes --Pred $Pred --Pblue $Pblue --Prr $Prr --Pbb $Pbb --Pgg $Pgg --Prb $Prb --Prg $Prg --Pbg $Pbg  --Pact $Pact
-# done
+	python fairinfMaximization.py \
+			--method greedy \
+			--dataset $dataset \
+			--budget $budget
+
+	# echo "Done running the greedy algorithm for" $dataset
+
+	# for walking_algorithm in "unweighted" "fairwalk"; do
+
+	# 	python fairinfMaximization.py \
+	# 		--method kmedoids \
+	# 		--walking_algorithm $walking_algorithm \
+	# 		--dataset $dataset \
+	# 		--budget $budget
+
+	# 	echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm" $walking_algorithm
+	# done
 
 
+	# python fairinfMaximization.py \
+	# 	--method kmedoids \
+	# 	--walking_algorithm random_walk \
+	# 	--dataset $dataset \
+	# 	--alpha ${dataset_to_alpha[$dataset]} \
+	# 	--exponent_p ${dataset_to_p[$dataset]} \
+	# 	--budget $budget
 
-nodes=500
-Pred=0.7
+	# echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm Crosswalk for parameters alpha" ${dataset_to_alpha[$dataset]} "and exponent" ${dataset_to_p[$dataset]}
 
-Phom=0.025
-Pact=0.03
+	# if [ $dataset = "rice_subset" ] || [ $dataset = "synth2" ]; then
 
-for Phet in 0.001; do #0.001 0.005 0.01 0.015 0.02 0.025; do
-	echo '      '
-	echo '              farinfMaximization.py              Phet='$Phet
-	python fairinfMaximization.py --nodes 500 --Pred $Pred --Phom $Phom --Phet $Phet --Pact $Pact
+	# 	attr_file=$(ls ${data}/${dataset} | grep ".attr")
+	# 	links_file=$(ls ${data}/${dataset} | grep ".links")
+
+	# 	attr_file=${data}/${dataset}/${attr_file}
+	# 	links_file=${data}/${dataset}/${links_file}
+
+	# 	python aae.py \
+	# 		--attr_filename $attr_file \
+	# 		--links_filename $links_file \
+	# 		--dataset $dataset
+	# fi
 done
-
