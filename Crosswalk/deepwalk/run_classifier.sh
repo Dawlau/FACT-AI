@@ -43,7 +43,8 @@ if [ "$ABLATION" = true ]; then
     # runs the python classification file with ablation
     python3 ../classifier/main_fixed.py --ablation True --nfiles $indices
 else
-    for method in 'random_walk_5_bndry_0.5_exp_2.0' 'unweighted' 'fairwalk'; do
+    # for method in 'random_walk_5_bndry_0.5_exp_1.0_d32' 'unweighted' 'fairwalk'; do
+    for method in 'random_walk_5_bndry_0.5_exp_1.0_d32'; do
         for i in $(seq 1 $indices); do
         python3 deepwalk --format edgelist \
                             --input $data/${dataset}/${dataset}.links \
