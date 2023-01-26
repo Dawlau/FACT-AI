@@ -67,8 +67,11 @@ def process(args):
     if (args.weighted is not None) and (args.weighted != 'unweighted'):
       G = graph.set_weights(G, args.weighted)
 
+    # addition
+    graph_filename = f'{args.input[:-6]}.embeddings_{args.weighted}_d{args.representation_size}.graph.out'
+
     if args.just_write_graph:
-        with open('wgraph.out', 'w') as fout:
+        with open(graph_filename, 'w') as fout:
             if args.weighted == 'unweighted':
                 for v in G:
                     s = len(G[v])

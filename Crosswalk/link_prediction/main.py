@@ -1,4 +1,4 @@
-from sklearn.linear_model.logistic import LogisticRegression
+from sklearn.linear_model import LogisticRegression
 import numpy as np
 import pickle
 import os.path
@@ -48,13 +48,14 @@ if __name__ == '__main__':
 
         # filename = 'sample_4000_connected_subset/sample_4000_connected_subset'
         filename = '../data/rice_subset/rice_subset'
-        # emb_file = filename + '.embeddings_unweighted_d32_' + iter
-        # emb_file = filename + '.embeddings_fairwalk_d32_' + iter
+        # emb_file = filename + '.embeddings_unweighted_d32'
+        # emb_file = filename + '.embeddings_fairwalk_d32' + iter # emb_file = filename + '.embeddings_fairwalk_d32_' + iter
         # emb_file = filename + '.randomembedding_d32_' + iter
-        emb_file = filename + '.pmodified__embeddings_fairwalk_d32'
+        # emb_file = filename + '.pmodified__embeddings_fairwalk_d32'
+        emb_file = filename + '.embeddings_random_walk_5_bndry_0.5_exp_2.0_d32'
         sens_attr_file = filename + '.attr'
-        train_links_file = filename + '_' + iter + '_trainlinks'
-        test_links_file = filename + '_' + iter + '_testlinks'
+        train_links_file = filename + '_trainlinks'
+        test_links_file = filename + '_testlinks'
 
         emb, dim = read_embeddings(emb_file)
         sens_attr = read_sensitive_attr(sens_attr_file, emb)
@@ -76,11 +77,27 @@ if __name__ == '__main__':
 
             filtered_train_links = train_links
 
+            print()
+            print('key', key)
+
+            print('train:', len(filtered_train_links))
+            print('test:', len(filtered_test_links))
+
+            print('ratio:', len(filtered_test_links)/len(filtered_train_links))
+
             clf = LogisticRegression(solver='lbfgs')
             x_train = np.array([extract_features(np.array(emb[l[0]]), np.array(emb[l[1]])) for l in filtered_train_links])
             y_train = np.array([l[4] for l in filtered_train_links])
+
+            print('x_train', x_train.shape)
+            print('y_train', y_train.shape)
+
             x_test = np.array([extract_features(np.array(emb[l[0]]), np.array(emb[l[1]])) for l in filtered_test_links])
             y_test = np.array([l[4] for l in filtered_test_links])
+
+            print('x_test', x_train.shape)
+            print('y_test', y_train.shape)
+
             clf.fit(x_train, y_train)
             y_pred = clf.predict(x_test)
             accuracy[key].append(100 * np.sum(y_test == y_pred) / x_test.shape[0])
@@ -89,8 +106,8 @@ if __name__ == '__main__':
         accuracy['max_diff'].append(np.max(last_accs) - np.min(last_accs))
         accuracy['var'].append(np.var(last_accs))
 
-        print(accuracy)
-        print()
+        # print(accuracy)
+        # print()
 
     print(accuracy)
     print()
