@@ -97,15 +97,11 @@ if __name__ == '__main__':
 
     main(args)
 
-    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.33 0.33 0.33
-    # python synthesize_graph.py --nodes 1000 --Phom 0.025 --Phet 0.001 --class-probs 0.33 0.33 0.33
-    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.33 0.33 0.33
+    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.3 0.5
+    # python synthesize_graph.py --nodes 1000 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.3 0.5
+    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.3 0.5
 
-    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.2 0.2 0.2 0.2
-    # python synthesize_graph.py --nodes 1000 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.2 0.2 0.2 0.2
-    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.2 0.2 0.2 0.2
-
-    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
-    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
-    # python synthesize_graph.py --nodes 5000 --Phom 0.025 --Phet 0.001 --class-probs 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
+    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.13 0.17 0.1 0.35 0.25
+    # python synthesize_graph.py --nodes 1000 --Phom 0.025 --Phet 0.001 --class-probs 0.13 0.17 0.1 0.35 0.25
+    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.13 0.17 0.1 0.35 0.25
 
