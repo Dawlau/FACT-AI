@@ -1,5 +1,5 @@
 # The dataset to be used in deepwalk to generate node representations.
-dataset='twitter'
+dataset='rice_subset'
 
 # Running parameters
 data=../data # Directory of the dataset.
@@ -7,9 +7,10 @@ d=32 # Dimensionality of the latent space.
 num_workers=1 # Number of parallel processes. (default: 1)
 num_walks=80 # Number of random walks to start at each node (default: 10)
 # weighted=fairwalk
-# weighted=unweighted
 # pmodified=4
-weighted=random_walk_5_bndry_0.7_exp_4.0
+
+#weighted=unweighted
+weighted=random_walk_5_bndry_0.5_exp_2.0
 
 # Running on a subset of the rice_subset dataset.
 ## Set which experiment to be ran to true to toggle it.
@@ -19,8 +20,12 @@ rwl_bndry_exp_experiment=false
 synthetic_experiment=false
 unweighted_experiment=false
 
+test_link_ratio=0.5
+test_links=$data/${dataset}/${dataset}_testlinks # change this for simple only: dataset
+train_links=$data/${dataset}/${dataset}_trainlinks # change this for simple only: dataset
+
 python deepwalk --format edgelist \
-                --input $data/${dataset}/sample_4000.links \
+                --input $data/${dataset}/${dataset}.links \
                 --max-memory-data-size 0 \
                 --number-walks $num_walks \
                 --representation-size $d \
@@ -28,11 +33,42 @@ python deepwalk --format edgelist \
                 --window-size 10 \
                 --workers $num_workers \
                 --weighted $weighted  \
-                --output $data/${dataset}/${dataset}.pmodified_${pmodified}_embeddings_${weighted}_d$d \
-                --sensitive-attr-file $data/${dataset}/sample_4000.attr \
-                # --sensitive-attr-file $data/${dataset}/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005.attr \
-                # --sensitive-attr-file $data/${dataset}/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr \
-                # --sensitive-attr-file $data/${dataset}/${dataset}.attr \
+                --output $data/${dataset}/${dataset}.embeddings_${weighted}_d$d \
+                --sensitive-attr-file $data/${dataset}/${dataset}.attr \
+                --test-links-file "${test_links}" \
+                --train-links-file "${train_links}" \
+                --test-links $test_link_ratio
+
+                #                --pmodified $pmodified \
+
+
+#python deepwalk --format edgelist \
+#                --input $data/${dataset}/${dataset}.links \
+#                --max-memory-data-size 0 \
+#                --number-walks $num_walks \
+#                --representation-size $d \
+#                --walk-length 40 \
+#                --window-size 10 \
+#                --workers $num_workers \
+#                --just-write-graph \
+#                --weighted $weighted \
+#                --output $data/${dataset}/${dataset}.embeddings_${weighted}_d$d \
+#                --sensitive-attr-file $data/${dataset}/${dataset}.attr
+#
+#python deepwalk --format edgelist \
+#                --input $data/${dataset}/sample_4000.links \
+#                --max-memory-data-size 0 \
+#                --number-walks $num_walks \
+#                --representation-size $d \
+#                --walk-length 40 \
+#                --window-size 10 \
+#                --workers $num_workers \
+#                --weighted $weighted  \
+#                --output $data/${dataset}/${dataset}.pmodified_${pmodified}_embeddings_${weighted}_d$d \
+#                --sensitive-attr-file $data/${dataset}/sample_4000.attr \
+#                # --sensitive-attr-file $data/${dataset}/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005.attr \
+#                # --sensitive-attr-file $data/${dataset}/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr \
+#                # --sensitive-attr-file $data/${dataset}/${dataset}.attr \
 
 
 if [ "$pmodified_experiment" = true ]; then
@@ -75,20 +111,27 @@ elif [ "$rwl_bndry_exp_experiment" = true ]; then
     for bndry in 0.5; do # 0.5 0.7 0.9
       for exponent in '2.0' '4.0'; do # '1.0' '2.0' '3.0' '4.0'
         for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
+          nodes=500
+          Pred=0.7
+          Phom=0.025   # todo: phom/phet
+          Phet=0.001
+          synthetic=synthetic_3layers
           method='random_walk_'${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
+          filename=$data/$synthetic/${synthetic}_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
           echo '   '
-          echo $data/${dataset}/${dataset}'  '$method
+          echo $filename'  '$method
           python deepwalk --format edgelist \
-                          --input $data/${dataset}/${dataset}.links \
+                          --input "${filename}".links \
                           --max-memory-data-size 0 \
                           --number-walks $num_walks \
                           --representation-size $d \
                           --walk-length 40 \
                           --window-size 10 \
                           --workers $num_workers \
-                          --output $data/${dataset}/${dataset}.embeddings_${method}_d$d \
+                          --just-write-graph \
+                          --output "${filename}".embeddings_${method}_d$d \
                           --weighted $method \
-                          --sensitive-attr-file $data/${dataset}/${dataset}.attr
+                          --sensitive-attr-file "${filename}".attr
         done
       done
     done
@@ -97,10 +140,10 @@ elif [ "$synthetic_experiment" = true ]; then
   nodes=500
   Pred=0.7
   Phom=0.025   # todo: phom/phet
-  synthetic=synth2
+  synthetic=synthetic_3layers
   for i in ''; do #'2' '3' '4' '5'; do ???? what does i do?
-    for Phet in 0.001 0.005 0.01 0.015; do
-      filename=$data/$synthetic/synthetic_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
+    for Phet in 0.001; do  # 0.001 0.005 0.01 0.015
+      filename=$data/$synthetic/${synthetic}_n${nodes}_Pred${Pred}_Phom${Phom}_Phet${Phet}
       method='unweighted'
       outfile=${filename}.embeddings_${method}_d${d}_$i
       echo ${i}'   '$method
@@ -150,9 +193,11 @@ elif [ "$unweighted_experiment" = true ]; then
                   --number-walks $num_walks \
                   --representation-size $d \
                   --walk-length 40 \
+                  --weighted 'unweighted' \
                   --window-size 10 \
+                  --just-write-graph \
                   --workers $num_workers \
-                  --output $data/${dataset}/${dataset}.embeddings_unweighted \
+                  --output $data/${dataset}/${dataset}.embeddings_unweighted_d$d \
                   --sensitive-attr-file $data/${dataset}/${dataset}.attr
 fi
 

@@ -25,7 +25,7 @@ def generate_2_groups_dataset(args):
                 edges.append((i, j))
                 edges.append((j, i))
 
-    filename = 'synthetic/synthetic_n' + str(n) + '_Pred' + str(args.Pred) + \
+    filename = f'{DATA}/synth2/synthetic_n' + str(n) + '_Pred' + str(args.Pred) + \
                '_Phom' + str(args.Phom) + '_Phet' + str(args.Phet)
 
     with open(filename + '.attr', 'w') as f:
@@ -65,7 +65,7 @@ def generate_n_group_dataset(args):
     with open(filename + '.attr', 'w') as f:
         for i in range(n):
             f.write(str(i+1) + ' ' +
-                    str(class_labels[next(x[0] for x in enumerate(class_delimiters) if x[1] > i)]) + '\n')
+                    str(class_labels[next((x[0] for x in enumerate(class_delimiters) if x[1] > i), num_classes - 1)]) + '\n')
 
     with open(filename + '.links', 'w') as f:
         for e in edges:
@@ -96,3 +96,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
+
+    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.33 0.33 0.33
+    # python synthesize_graph.py --nodes 1000 --Phom 0.025 --Phet 0.001 --class-probs 0.33 0.33 0.33
+    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.33 0.33 0.33
+
+    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.2 0.2 0.2 0.2
+    # python synthesize_graph.py --nodes 1000 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.2 0.2 0.2 0.2
+    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.2 0.2 0.2 0.2 0.2
+
+    # python synthesize_graph.py --nodes 500 --Phom 0.025 --Phet 0.001 --class-probs 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
+    # python synthesize_graph.py --nodes 2000 --Phom 0.025 --Phet 0.001 --class-probs 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
+    # python synthesize_graph.py --nodes 5000 --Phom 0.025 --Phet 0.001 --class-probs 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
+

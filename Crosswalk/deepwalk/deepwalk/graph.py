@@ -304,6 +304,7 @@ def load_edgelist(file_, undirected=True, attr_file_name=None, test_links_ratio=
 
     print('All attributes: ', np.unique(list(G.attr.values())))
 
+  # !! Important to consider: delete the test/train-links file when switching up the train-test ratio
   if (test_links_file is not None) and (train_links_file is not None) and path.isfile(test_links_file) and path.isfile(train_links_file):
     with open(train_links_file, 'rb') as fin:
         train_links = pickle.load(fin)
