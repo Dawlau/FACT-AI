@@ -98,8 +98,7 @@ def visualize_walks(dataset, embedding, walks_visualised):
     net.repulsion()
 
     # draw random walks on the graph.
-    # net.show_buttons()
-    # net.toggle_physics(False)
+    net.show_buttons()
     net.show(f"{dataset}_{embedding}.html")
 
 
