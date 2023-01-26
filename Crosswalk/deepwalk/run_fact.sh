@@ -68,38 +68,41 @@ elif [ "$c_d_experiment" = true ]; then
     done
   done
 elif [ "$rwl_bndry_exp_experiment" = true ]; then
-  for rwl in 5; do # 5 10 20
-    for bndry in 0.5; do # 0.5 0.7 0.9
-      for exponent in '1.0'; do # '1.0' '2.0' '3.0' '4.0'
-        for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
-          for d in 32 64 92 128; do
-            for method in 'unweighted'; do #'random_walk' 'fairwalk' 'unweighted'
-              if [ $method = "unweighted" ]; then
-                echo $method
-                full_method=${method}
-                test_links=$data/${dataset}/${method}/links/${method}_${dataset}_d$d-test-${test_link_ratio}.links
-                train_links=$data/${dataset}/${method}/links/${method}_${dataset}_d$d-train-${test_link_ratio}.links
-              else
-                full_method=${method}_${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
-                test_links=$data/${dataset}/${method}/links/${full_method}-$dataset-test-${test_link_ratio}.links
-                train_links=$data/${dataset}/${method}/links/${full_method}-$dataset-train-${train_link_ratio}.links
-              fi
-              echo '   '
-              echo $data/${dataset}/${dataset}'  '$method 'rwl: ' $rwl 'bndry: ' $bndry 'exp: ' $exponent 'bndrytype: ' $bndrytype  'd: ' $d
-              python deepwalk --format edgelist \
-                              --input $data/${dataset}/${dataset}.links \
-                              --max-memory-data-size 0 \
-                              --number-walks $num_walks \
-                              --representation-size $d \
-                              --walk-length 40 \
-                              --window-size 10 \
-                              --workers $num_workers \
-                              --output $data/${dataset}/${method}/embeddings/${dataset}.embeddings_${full_method}_d${d} \
-                              --weighted $full_method \
-                              --sensitive-attr-file $data/${dataset}/${dataset}.attr \
-                              --test-links-file $test_links \
-                              --train-links-file $train_links \
-                              --test-links $test_link_ratio
+  for i in 1 2 3 4 5; do
+    for dataset in 'rice_subset' 'twitter' 'synth2' 'synth3'; do
+      for rwl in 5; do # 5 10 20
+        for bndry in 0.5 0.7 0.9; do # 0.5 0.7 0.9 --> alpha
+          for exponent in '1.0' '2.0' '3.0' '4.0'; do # '1.0' '2.0' '3.0' '4.0' --> p 
+            for bndrytype in 'bndry'; do # 'bndry' 'revbndry'
+              for d in 32; do # 32 64 92 128
+                for method in 'random_walk' 'fairwalk' 'unweighted'; do #'random_walk' 'fairwalk' 'unweighted'
+                  if [ $method = "unweighted" ]; then
+                    full_method=${method}
+                    test_links=$data/${dataset}/${method}/links/${method}_${dataset}_d$d-test-${test_link_ratio}_${i}.links
+                    train_links=$data/${dataset}/${method}/links/${method}_${dataset}_d$d-train-${test_link_ratio}_${i}.links
+                  else
+                    full_method=${method}_${rwl}'_'$bndrytype'_'${bndry}'_exp_'${exponent}
+                    test_links=$data/${dataset}/${method}/links/${full_method}-$dataset-test-${test_link_ratio}_${i}.links
+                    train_links=$data/${dataset}/${method}/links/${full_method}-$dataset-train-${train_link_ratio}_${i}.links
+                  fi
+                  echo '   '
+                  echo $data/${dataset}/${dataset}'  '$method 'rwl: ' $rwl 'bndry: ' $bndry 'exp: ' $exponent 'bndrytype: ' $bndrytype  'd: ' $d
+                  python deepwalk --format edgelist \
+                                  --input $data/${dataset}/${dataset}.links \
+                                  --max-memory-data-size 0 \
+                                  --number-walks $num_walks \
+                                  --representation-size $d \
+                                  --walk-length 40 \
+                                  --window-size 10 \
+                                  --workers $num_workers \
+                                  --output $data/${dataset}/${method}/embeddings_${train_link_ratio}train${test_link_ratio}test/${dataset}.embeddings_${full_method}_d${d}_${i} \
+                                  --weighted $full_method \
+                                  --sensitive-attr-file $data/${dataset}/${dataset}.attr \
+                                  --test-links-file $test_links \
+                                  --train-links-file $train_links \
+                                  --test-links $test_link_ratio
+                done
+              done
             done
           done
         done
