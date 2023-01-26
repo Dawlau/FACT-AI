@@ -50,7 +50,7 @@ def process(args):
     if args.format == "adjlist":
         G = graph.load_adjacencylist(args.input, undirected=args.undirected)
     elif args.format == "edgelist":
-        G = graph.load_edgelist(args.input, undirected=args.undirected, attr_file_name=args.sensitive_attr_file, 
+        G = graph.load_edgelist(args.input, undirected=args.undirected, attr_file_name=args.sensitive_attr_file,
                 test_links_ratio=args.test_links, test_links_file=args.test_links_file,
                 train_links_file=args.train_links_file)
     elif args.format == "mat":

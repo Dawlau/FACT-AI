@@ -13,6 +13,8 @@ from tensorflow.python.ops.losses import losses
 from sklearn.cluster import KMeans
 from tensorflow.python.client import device_lib
 import time
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+import os
 
 
 def build_encoder(embedding_size):
@@ -467,10 +469,8 @@ def repeated_IC(G, nodes_zero, nodes_one, seeds, seeds_type, n_expr, imp_prob, r
   return total_imp, total_fraction, fraction_zero, fraction_one
 
 
-def train_aae():
-    embedding_size = 30
-    edges_filename = "/home/andreib/FACT-AI/Crosswalk/data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.links"
-    attr_filename = "/home/andreib/FACT-AI/Crosswalk/data/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001.attr"
+def train_aae(edges_filename, attr_filename):
+    embedding_size = 32
 
     # Can get `with_f1` or `without_f1`
     first_order_imp = 'no_f1'
@@ -521,9 +521,9 @@ def train_aae():
 
     print('adversarial training done.')
 
-    N_CLUSs = [4]
+    N_CLUSs = [5]
 
-    n_seedss = [1, 2, 3, 4, 5, 6, 7, 8, 10]
+    n_seedss = [8]
     # n_seedss = [8]
 
     # Methods for getting the seeds can be nearest or re-cluster
@@ -549,19 +549,42 @@ def train_aae():
 
             #10. Building the current row and adding it to the rows.
             row =[ embedding_size ,  N_CLUS,  n_seeds, total_fair, fair_frac, zero_fair, one_fair,  total_pre ,  pre_frac ,  zero_pre ,  one_pre, '\'' + strategy + '\'']
-            print(row)
 
             rows += '[' + ', '.join(map(str, row)) + ']'
 
         rows += ']'
 
+    return rows
 
-    print(rows)
+
+def save_results(dataset, results):
+  filename = os.path.join("results", dataset, f"adv_results.txt")
+
+  with open(filename, "w") as w:
+    for row in results:
+      w.writelines(str(row).replace("'", "\""))
 
 
 if __name__ == "__main__":
-    start_time = time.time()
-    train_aae()
-    end_time = time.time()
+  parser = ArgumentParser("Run adversarial autoencoder",
+                          formatter_class=ArgumentDefaultsHelpFormatter,
+                          conflict_handler='resolve')
 
-    print(f"Execution time is: {end_time - start_time}")
+  parser.add_argument('--attr_filename', type=str, help='The file path to the node attributes')
+  parser.add_argument('--links_filename', type=str, help='The file path to the graph edges')
+  parser.add_argument('--dataset', type=str, help='The name of the dataset used')
+
+  args = parser.parse_args()
+  dataset = args.dataset
+
+  if os.path.exists(os.path.join("results", dataset, f"adv_results.txt")):
+    print("Experiments already exist")
+    exit(0)
+
+  start_time = time.time()
+  results = train_aae(args.links_filename, args.attr_filename)
+  end_time = time.time()
+
+  print(f"Execution time is: {end_time - start_time}")
+
+  save_results(dataset, results)

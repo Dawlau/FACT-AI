@@ -132,5 +132,5 @@ dmypy.json
 .DS_Store
 
 *embeddings*
-
+*.txt
 Crosswalk/datahub

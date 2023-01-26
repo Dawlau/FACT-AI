@@ -267,7 +267,7 @@ def generalGreedy(G, k, p=.01):
     return S
 
 
-def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=1, G_greedy = None):
+def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=1, G_greedy=None):
     ''' Finds initial seed set S using general greedy heuristic
     Input: G -- networkx Graph object
     k -- number of initial nodes needed
@@ -298,32 +298,7 @@ def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=
 
     # stats = ut.graph_stats(G, print_stats=False)
 
-    try:
-
-        influenced, influenced_a, influenced_b, seeds_a, seeds_b = ut.read_files(filename)
-
-        raise Exception('It was supposed not to be reached.')
-
-        S = seeds_a[-1] + seeds_b[-1]
-
-        if len(S) >= budget:
-            # ut.write_files(filename,influenced, influenced_a, influenced_b, seeds_a, seeds_b)
-            print(influenced_a)
-            print("\n\n")
-            print(influenced_b)
-            print(" Seed length ", len(S))
-
-            ut.plot_influence(influenced_a, influenced_b, len(S), filename, stats['group_a'], stats['group_b'],
-                              [len(S_a) for S_a in seeds_a], [len(S_b) for S_b in seeds_b])
-
-            return (influenced, influenced_a, influenced_b, seeds_a, seeds_b)
-        else:
-            seed_range = range(budget - len(S))
-
-    except FileNotFoundError:
-        print(f'{filename} not Found ')
-
-        seed_range = range(budget)
+    seed_range = range(budget)
 
     # add node to S if achieves maximum propagation for current chosen + this node
     for i in seed_range:  # cannot parallellize
