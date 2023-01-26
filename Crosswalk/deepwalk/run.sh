@@ -17,7 +17,9 @@ for i in {1..5}; do
 
     # run fairwalk and deepwalk
     for weighted in "fairwalk" "unweighted"; do
-      output_file=${data}/${dataset}/embeddings_${weighted}_d32_${i}
+      output_file=${data}/${dataset}/${dataset}.embeddings_${weighted}_d32_${i}
+      test_link_file=${data}/${dataset}/${dataset}_${weighted}_${i}_testlinks
+      train_link_file=${data}/${dataset}/${dataset}_${weighted}_${i}_trainlinks
 
       if ! [ -f $output_file ]; then
         python deepwalk --format edgelist \
@@ -30,7 +32,10 @@ for i in {1..5}; do
                         --workers $num_workers \
                         --weighted $weighted  \
                         --output $output_file \
-                        --sensitive-attr-file $attr_file
+                        --sensitive-attr-file $attr_file \
+                        --test-links 0.25 \
+                        --test-links-file $test_link_file \
+                        --train-links-file $train_link_file
       else
         echo $output_file already exists
       fi
@@ -39,7 +44,10 @@ for i in {1..5}; do
     # run crosswalk with different parameters
     for alpha in ${alpha_values[@]}; do
       for exponent in ${exponent_values[@]}; do
-        output_file=${data}/${dataset}/embeddings_random_walk_${alpha}_bndry_0.1_exp_${exponent}_d32_${i}
+        method=random_walk_5_bndry_${alpha}_exp_${exponent}
+        output_file=${data}/${dataset}/embeddings_${method}_d32_${i}
+        test_link_file=${data}/${dataset}/${dataset}_${method}_${i}_testlinks
+        train_link_file=${data}/${dataset}/${dataset}_${method}_${i}_trainlinks
 
         if ! [ -f $output_file ]; then
           python deepwalk --format edgelist \
@@ -52,7 +60,11 @@ for i in {1..5}; do
                   --workers $num_workers \
                   --weighted $weighted  \
                   --output $output_file \
-                  --sensitive-attr-file $attr_file
+                  --sensitive-attr-file $attr_file \
+                  --test-links 0.25 \
+                  --test-links-file $test_link_file \
+                  --train-links-file $train_link_file
+
         else
           echo $output_file already exists
         fi

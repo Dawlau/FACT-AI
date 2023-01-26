@@ -35,7 +35,7 @@ for dataset in ${datasets[@]}; do
 	# 	--budget $budget
 
 	# echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm Crosswalk for parameters alpha" ${dataset_to_alpha[$dataset]} "and exponent" ${dataset_to_p[$dataset]}
-
+	
 	# if [ $dataset = "rice_subset" ] || [ $dataset = "synth2" ]; then
 
 	# 	attr_file=$(ls ${data}/${dataset} | grep ".attr")
