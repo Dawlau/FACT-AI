@@ -33,7 +33,7 @@ def read_links(links_file, emb, binary=False):
     if binary==True:
         with open(links_file, 'rb') as f:
             lines = pickle.load(f)
-    
+
     # since the link files are not binary:
     else:
         with open(links_file, 'r') as f:
@@ -46,7 +46,7 @@ def read_links(links_file, emb, binary=False):
     if binary==True:
         #links = [[float(l[0]), float(l[1])] for l in lines if float(l[0]) in emb.keys() and float(l[1]) in emb.keys()]
         return [l for l in lines if l[0] in emb.keys() and l[1] in emb.keys()]
-    else:    
+    else:
         # more robust method for above, although inefficient
         links = []
         n_nodes = len(lines[0])
@@ -61,17 +61,16 @@ def read_links(links_file, emb, binary=False):
 
 def extract_features(u,v):
     return (u-v)**2
-    # return np.array([np.sqrt(np.sum((u-v)**2))])
 
 
-# run w synth2 after 
+# run w synth2 after
 def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iters=6, test_ratio=0.5):
-    
+
     #all_labels = [0, 1]
     if dataset in ('rice_subset', 'synth2'):
         all_labels = [0, 1]
     elif dataset in ('twitter', 'synth3'):
-        all_labels = [0, 1, 2]                
+        all_labels = [0, 1, 2]
 
     label_pairs = [(int(all_labels[i]), int(all_labels[j])) for i in range(len(all_labels)) for j in range(len(all_labels))]
     accuracy_keys = label_pairs + ['max_diff', 'var', 'total']
@@ -87,10 +86,10 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
             full_method=f'{emb_type}_{rwl}_{bndrytype}_{bndry}_exp_{exp}'
             test_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{rwl}_bndry_{bndry}_exp_{exp}-{dataset}-test-{test_ratio}_{iter}.links'
             train_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{rwl}_bndry_{bndry}_exp_{exp}-{dataset}-train-{1-test_ratio}_{iter}.links'
-        
+
         emb_filepath = f'{filename}/{emb_type}/embeddings_{1-test_ratio}train{test_ratio}test/{dataset}.embeddings_{full_method}_d{d}_{iter}'
         #sens_attr_filepath = filename + '/' + dataset + '.attr'
-        
+
         emb, dim = read_embeddings(emb_filepath)
         #sens_attr = read_sensitive_attr(sens_attr_filepath, emb)
 
@@ -98,9 +97,9 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
         test_links = read_links(test_links_filepath, emb, binary=True)
 
         print('----', iter, dataset, emb_type, ' boundary_val = ', bndry, ' exp = ', exp, '----')
-        
+
         for key in label_pairs + ['total']:
-            if key == 'total':  
+            if key == 'total':
                 valid_edge_pairs = [(all_labels[i],all_labels[j]) for i in range(len(all_labels)) for j in range(len(all_labels))]
             else:
                 l1, l2 = key
@@ -108,7 +107,7 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
                 valid_edge_pairs = [key]
                 if l1 != l2:
                     valid_edge_pairs.append((l2,l1))
-            
+
             # check for valid labels
             # first two elems are the node ids, 3rd and 4th elem are respective groups (label)
             filtered_train_links = train_links
@@ -120,7 +119,7 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
             # extract_features() takes the squared difference of two elements
             x_train = np.array([extract_features(np.array(emb[l[0]]), np.array(emb[l[1]])) for l in filtered_train_links])
             y_train = np.array([l[4] for l in filtered_train_links])
-            
+
             x_test = np.array([extract_features(np.array(emb[l[0]]), np.array(emb[l[1]])) for l in filtered_test_links])
             y_test = np.array([l[4] for l in filtered_test_links])
 
@@ -132,12 +131,12 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
             accuracy[key].append(curr_acc)
             if l1 != l2:
                 accuracy[(l2, l1)].append(curr_acc)
-    
+
         last_accs = [accuracy[k][-1] for k in label_pairs]
         accuracy['max_diff'].append(np.max(last_accs) - np.min(last_accs))
         accuracy['var'].append(np.var(last_accs))
 
-    avg_accuracies = {}    
+    avg_accuracies = {}
     print(f'embedding type: {emb_type} | rwl: {rwl} | bndry: {bndry} | bndrytype: {bndrytype} | exp: {exp} | d: {d}')
     for k in accuracy_keys:
         print(str(k) + ' | accuracy:', np.mean(accuracy[k]), '| std: ' + str(np.std(accuracy[k])) + '')
@@ -211,17 +210,17 @@ if __name__ == '__main__':
     bndry_types = ['bndry']
     emb_types = ['random_walk', 'fairwalk', 'unweighted']
     ds = [32] #128, 32, 64, 92
-    
+
     # print single example
     #dataset = 'twitter' #'rice_subset', 'twitter'
     #accuracies = run_link_prediction(dataset, emb_types[0], rwl[0], bndry_types[0], bndries[0], exponents[0], ds[0], all_labels)
     #print(accuracies)
-    
+
     test_ratio = 0.5
     accuracies = experiment_parameters(datasets, emb_types, rwl, bndry_types, bndries, exponents, ds, threads=0, test_ratio=test_ratio)
     df = pd.DataFrame.from_dict(accuracies)
     print(df)
     df.to_csv(f'link_prediction/link_prediction_results_test_ratio_{test_ratio}.csv', index=None)
-    
+
     # p default 1
     # alpha = bndries
