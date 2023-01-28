@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 import json
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 
 DATASETS = ["rice_subset", "synth2", "synth3", "twitter"]
 METHODS = ["greedy", "adv", "unweighted", "fairwalk", "random_walk"]
-NUM_NODES_A = {"rice_subset": 344, "synth2": 350, "synth3": 300, "twitter": 2598}
-NUM_NODES_B = {"rice_subset": 97, "synth2": 150, "synth3": 125, "twitter": 782}
+NUM_NODES_A = {"rice_subset": 97, "synth2": 150, "synth3": 125, "twitter": 2598}
+NUM_NODES_B = {"rice_subset": 344, "synth2": 350, "synth3": 300, "twitter": 782}
 NUM_NODES_C = {"synth3": 75, "twitter": 180}
 NUM_GROUPS = {"rice_subset": 2, "synth2": 2, "synth3": 3, "twitter": 3}
 
@@ -28,7 +29,8 @@ square = True
 bar_width = 0.5
 legend_size = 20
 
-def get_bar_plot(total_influence_results, disparity_results, dataset, ylim=None):
+
+def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset, ylim=None):
 
     has_3_groups = NUM_GROUPS[dataset] == 3
 
@@ -91,6 +93,64 @@ def get_bar_plot(total_influence_results, disparity_results, dataset, ylim=None)
     fig.savefig(os.path.join("fig", dataset) + ".pdf", bbox_inches='tight')
 
 
+def get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, ylim=None):
+
+    has_3_groups = NUM_GROUPS[dataset] == 3
+
+    xe = [2 - bar_width, 2]
+    xu = [4 - bar_width, 4]
+    xf = [6 - bar_width, 6]
+
+    if not has_3_groups:
+        xp = [8 - bar_width, 8]
+
+    deepwalk_influence = total_influence_results["unweighted"]
+    fairwalk_influence = total_influence_results["fairwalk"]
+    crosswalk_influence = total_influence_results["random_walk"]
+
+    if not has_3_groups:
+        adv_influence = total_influence_results["adv"]
+
+    deepwalk_disparity = disparity_results["unweighted"]
+    fairwalk_disparity = disparity_results["fairwalk"]
+    crosswalk_disparity = disparity_results["random_walk"]
+
+    if not has_3_groups:
+        adv_disparity = disparity_results["adv"]
+
+    fig, ax = plt.subplots()
+
+    ax.bar(xe[0], deepwalk_influence, bar_width, color=purple_, edgecolor='black', label='Total Influence Percentage')
+    ax.bar(xu[0], fairwalk_influence, bar_width, color=purple_, edgecolor='black')
+    ax.bar(xf[0], crosswalk_influence, bar_width, color=purple_, edgecolor='black')
+    if not has_3_groups:
+        ax.bar(xp[0], adv_influence, bar_width, color=purple_, edgecolor='black')
+
+    ax.bar(xe[1], deepwalk_disparity, bar_width, color=yellow_, edgecolor='black', label='Disparity')
+    ax.bar(xu[1], fairwalk_disparity, bar_width, color=yellow_, edgecolor='black')
+    ax.bar(xf[1], crosswalk_disparity, bar_width, color=yellow_, edgecolor='black')
+    if not has_3_groups:
+        ax.bar(xp[1], adv_disparity, bar_width, color=yellow_, edgecolor='black')
+
+    if ylim:
+        ax.set_ylim([0, ylim])
+
+    plt.legend(loc='upper right', prop={'size': legend_size})
+
+    if has_3_groups:
+        plt.xticks([2, 4, 6], ['DeepWalk', 'FairWalk', 'CrossWalk'], fontsize=legend_size)
+    else:
+        plt.xticks([2, 4, 6, 8], ['DeepWalk', 'FairWalk', 'CrossWalk', 'Adversarial'], fontsize=legend_size)
+
+    ax.yaxis.grid(color='gray', linestyle='dashed')
+
+    plt.rcParams.update({'font.size': font_size})
+    plt.yticks(fontsize=label_size)
+    fig.set_size_inches(image_size[0], image_size[1])
+
+    fig.savefig(os.path.join("fig", dataset) + ".pdf", bbox_inches='tight')
+
+
 def read_txt_file(filename, dataset):
     has_3_groups = NUM_GROUPS[dataset] == 3
 
@@ -137,7 +197,7 @@ def read_txt_file(filename, dataset):
     return results
 
 
-def main():
+def main(without_greedy):
     for dataset in DATASETS:
         result_files = os.listdir(os.path.join("results", dataset))
 
@@ -180,7 +240,17 @@ def main():
                 disparity_results[method] = disparity
                 total_influence_results[method] = total_influence
 
-        get_bar_plot(total_influence_results, disparity_results, dataset)
+        if without_greedy:
+            get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset)
+        else:
+            get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset)
+
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser("Synthesize Graph",
+                            formatter_class=ArgumentDefaultsHelpFormatter,
+                            conflict_handler='resolve')
+
+    parser.add_argument('--without_greedy', action="store_true", help='Flag that specifies whether to use greedy or not', default=False)
+    args = parser.parse_args()
+    main(args.without_greedy)
