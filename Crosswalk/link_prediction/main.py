@@ -97,6 +97,8 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
         train_links = read_links(train_links_filepath, emb, binary=True)
         test_links = read_links(test_links_filepath, emb, binary=True)
 
+        print('----', iter, dataset, emb_type, ' boundary_val = ', bndry, ' exp = ', exp, '----')
+        
         for key in label_pairs + ['total']:
             if key == 'total':  
                 valid_edge_pairs = [(all_labels[i],all_labels[j]) for i in range(len(all_labels)) for j in range(len(all_labels))]
@@ -111,7 +113,6 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
             # first two elems are the node ids, 3rd and 4th elem are respective groups (label)
             filtered_train_links = train_links
             filtered_test_links = [l for l in test_links if (l[2], l[3]) in valid_edge_pairs]
-
 
             # make multinomial
             clf = LogisticRegression(solver='lbfgs', multi_class='multinomial')
@@ -131,7 +132,7 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
             accuracy[key].append(curr_acc)
             if l1 != l2:
                 accuracy[(l2, l1)].append(curr_acc)
-
+    
         last_accs = [accuracy[k][-1] for k in label_pairs]
         accuracy['max_diff'].append(np.max(last_accs) - np.min(last_accs))
         accuracy['var'].append(np.var(last_accs))
@@ -201,14 +202,18 @@ if __name__ == '__main__':
 
     datasets = ['twitter', 'rice_subset', 'synth2', 'synth3']
     rwl = [5] #[5, 10, 20]
+
+    # bndries are referred to as alpha in the paper
     bndries = [0.5, 0.7, 0.9]
+
+    # exponents are referred to as p in the paper
     exponents = [1.0, 2.0, 3.0, 4.0]
     bndry_types = ['bndry']
     emb_types = ['random_walk', 'fairwalk', 'unweighted']
     ds = [32] #128, 32, 64, 92
     
     # print single example
-    dataset = 'twitter' #'rice_subset', 'twitter'
+    #dataset = 'twitter' #'rice_subset', 'twitter'
     #accuracies = run_link_prediction(dataset, emb_types[0], rwl[0], bndry_types[0], bndries[0], exponents[0], ds[0], all_labels)
     #print(accuracies)
     
@@ -216,7 +221,7 @@ if __name__ == '__main__':
     accuracies = experiment_parameters(datasets, emb_types, rwl, bndry_types, bndries, exponents, ds, threads=0, test_ratio=test_ratio)
     df = pd.DataFrame.from_dict(accuracies)
     print(df)
-    df.to_csv(f'link_prediction_results_test_ratio_{test_ratio}.csv', index=None)
-    # bias parameters
+    df.to_csv(f'link_prediction/link_prediction_results_test_ratio_{test_ratio}.csv', index=None)
+    
     # p default 1
     # alpha = bndries
