@@ -8,6 +8,9 @@ import pandas as pd
 
 from multiprocessing import Process, Pool
 
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def read_embeddings(emb_file):
     emb = dict()
     with open(emb_file, 'r') as fin:
@@ -64,9 +67,8 @@ def extract_features(u,v):
 
 
 # run w synth2 after
-def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iters=6, test_ratio=0.5):
+def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iters=6):
 
-    #all_labels = [0, 1]
     if dataset in ('rice_subset', 'synth2'):
         all_labels = [0, 1]
     elif dataset in ('twitter', 'synth3'):
@@ -76,23 +78,22 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
     accuracy_keys = label_pairs + ['max_diff', 'var', 'total']
     accuracy = {k : [] for k in accuracy_keys}
     for iter in tqdm([str(k) for k in range(1,n_iters)]):
-        filename = f'data/{dataset}'
+        filename = os.path.join(ROOT_DIR, "data", dataset)
 
-        if emb_type == 'unweighted':
+        if emb_type == 'unweighted' or emb_type == 'fairwalk':
             full_method = emb_type
-            test_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{dataset}_d{d}-test-{test_ratio}_{iter}.links'
-            train_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{dataset}_d{d}-train-{test_ratio}_{iter}.links'
+            # test_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{dataset}_d{d}-test-{test_ratio}_{iter}.links'
+            # train_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{dataset}_d{d}-train-{test_ratio}_{iter}.links'
+            test_links_filepath = f'{filename}/{dataset}_{emb_type}_{iter}_testlinks'
+            train_links_filepath = f'{filename}/{dataset}_{emb_type}_{iter}_trainlinks'
         else:
             full_method=f'{emb_type}_{rwl}_{bndrytype}_{bndry}_exp_{exp}'
-            test_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{rwl}_bndry_{bndry}_exp_{exp}-{dataset}-test-{test_ratio}_{iter}.links'
-            train_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{rwl}_bndry_{bndry}_exp_{exp}-{dataset}-train-{1-test_ratio}_{iter}.links'
+            test_links_filepath = f'{filename}/{dataset}_{full_method}_{iter}_testlinks'
+            train_links_filepath = f'{filename}/{dataset}_{full_method}_{iter}_trainlinks'
 
-        emb_filepath = f'{filename}/{emb_type}/embeddings_{1-test_ratio}train{test_ratio}test/{dataset}.embeddings_{full_method}_d{d}_{iter}'
-        #sens_attr_filepath = filename + '/' + dataset + '.attr'
+        emb_filepath = os.path.join(filename, f"{dataset}.embeddings_{full_method}_d{d}_{iter}")
 
         emb, dim = read_embeddings(emb_filepath)
-        #sens_attr = read_sensitive_attr(sens_attr_filepath, emb)
-
         train_links = read_links(train_links_filepath, emb, binary=True)
         test_links = read_links(test_links_filepath, emb, binary=True)
 
@@ -129,21 +130,21 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
             curr_acc = 100 * np.sum(y_test == y_pred) / x_test.shape[0]
 
             accuracy[key].append(curr_acc)
-            if l1 != l2:
-                accuracy[(l2, l1)].append(curr_acc)
 
         last_accs = [accuracy[k][-1] for k in label_pairs]
+
         accuracy['max_diff'].append(np.max(last_accs) - np.min(last_accs))
         accuracy['var'].append(np.var(last_accs))
 
     avg_accuracies = {}
     print(f'embedding type: {emb_type} | rwl: {rwl} | bndry: {bndry} | bndrytype: {bndrytype} | exp: {exp} | d: {d}')
     for k in accuracy_keys:
-        print(str(k) + ' | accuracy:', np.mean(accuracy[k]), '| std: ' + str(np.std(accuracy[k])) + '')
+        print(str(k) + ' | accuracy:', np.mean(accuracy[k]), '| var: ' + str(np.std(accuracy[k])) + '')
         avg_accuracies[k] = np.mean(accuracy[k])
+
     return (avg_accuracies, {'dataset':dataset, 'embedding_type':emb_type, 'rwl':rwl, 'boundary_type':bndrytype, 'boundary_val':bndry, 'exp':exp, 'd': d})
 
-def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threads=0, test_ratio=0.5, n_iters=6):
+def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threads=0, n_iters=6):
     if threads <= 1:
         accuracies = []
         for dataset in datasets:
@@ -153,7 +154,7 @@ def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threa
                         for exp in exponents:
                             for bndrytype in bndry_types:
                                 for d in ds:
-                                    accuracy, args= run_link_prediction(dataset, emb_type, r, bndrytype, bndry, exp, d, n_iters=n_iters, test_ratio=test_ratio)
+                                    accuracy, args= run_link_prediction(dataset, emb_type, r, bndrytype, bndry, exp, d, n_iters=n_iters)
                                     accuracy['dataset'] = args['dataset']
                                     accuracy['embedding_type'] = args['embedding_type']
                                     accuracy['rwl'] = args['rwl']
@@ -171,7 +172,7 @@ def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threa
                         for exp in exponents:
                             for bndrytype in bndry_types:
                                 for d in ds:
-                                    input_args.append((dataset, emb_type, r, bndrytype, bndry, exp, d, n_iters, test_ratio))
+                                    input_args.append((dataset, emb_type, r, bndrytype, bndry, exp, d, n_iters))
 
         accuracies = []
         with Pool(processes=threads) as pool:
@@ -189,38 +190,19 @@ def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threa
 
 if __name__ == '__main__':
 
-    # TODO
-    # now run with different parameters for:
-    # bndries (alpha)
-    # exponents (p)
-
-    # done:
-    # bndries (alpha) = 0.5
-    # exponent (p) = 2.0
-    # for twitter, rice, synth2/3
-
-    datasets = ['twitter', 'rice_subset', 'synth2', 'synth3']
-    rwl = [5] #[5, 10, 20]
+    datasets = ['rice_subset', 'twitter']#, 'synth2', 'synth3']
+    rwl = [5]
 
     # bndries are referred to as alpha in the paper
-    bndries = [0.5, 0.7, 0.9]
-
+    # bndries = [0.1, 0.5, 0.7, 0.9]
+    bndries = [0.5]
     # exponents are referred to as p in the paper
-    exponents = [1.0, 2.0, 3.0, 4.0]
+    # exponents = [1.0, 2.0, 4.0, 5.0, 8.0]
+    exponents = [2.0]
     bndry_types = ['bndry']
     emb_types = ['random_walk', 'fairwalk', 'unweighted']
-    ds = [32] #128, 32, 64, 92
+    ds = [32]
 
-    # print single example
-    #dataset = 'twitter' #'rice_subset', 'twitter'
-    #accuracies = run_link_prediction(dataset, emb_types[0], rwl[0], bndry_types[0], bndries[0], exponents[0], ds[0], all_labels)
-    #print(accuracies)
-
-    test_ratio = 0.5
-    accuracies = experiment_parameters(datasets, emb_types, rwl, bndry_types, bndries, exponents, ds, threads=0, test_ratio=test_ratio)
+    accuracies = experiment_parameters(datasets, emb_types, rwl, bndry_types, bndries, exponents, ds, threads=0)
     df = pd.DataFrame.from_dict(accuracies)
-    print(df)
-    df.to_csv(f'link_prediction/link_prediction_results_test_ratio_{test_ratio}.csv', index=None)
-
-    # p default 1
-    # alpha = bndries
+    df.to_csv(f'link_prediction_results.csv', index=None)
