@@ -7,7 +7,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 
 DATASETS = ["rice_subset", "synth2", "synth3", "twitter"]
-METHODS = ["greedy", "adv", "unweighted", "fairwalk", "random_walk"]
+METHODS = ["adv", "unweighted", "fairwalk", "random_walk", "greedy"]
 NUM_NODES_A = {"rice_subset": 97, "synth2": 150, "synth3": 125, "twitter": 2598}
 NUM_NODES_B = {"rice_subset": 344, "synth2": 350, "synth3": 300, "twitter": 782}
 NUM_NODES_C = {"synth3": 75, "twitter": 180}
@@ -30,7 +30,7 @@ bar_width = 0.5
 legend_size = 20
 
 
-def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset, ylim=None):
+def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset, walk, ylim=None):
 
     has_3_groups = NUM_GROUPS[dataset] == 3
 
@@ -44,7 +44,7 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
 
     deepwalk_influence = total_influence_results["unweighted"]
     fairwalk_influence = total_influence_results["fairwalk"]
-    crosswalk_influence = total_influence_results["random_walk"]
+    crosswalk_influence = total_influence_results[walk]
     greedy_influence = total_influence_results["greedy"]
 
     if not has_3_groups:
@@ -52,7 +52,7 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
 
     deepwalk_disparity = disparity_results["unweighted"]
     fairwalk_disparity = disparity_results["fairwalk"]
-    crosswalk_disparity = disparity_results["random_walk"]
+    crosswalk_disparity = disparity_results[walk]
     greedy_disparity = disparity_results["greedy"]
 
     if not has_3_groups:
@@ -90,10 +90,10 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
     plt.yticks(fontsize=label_size)
     fig.set_size_inches(image_size[0], image_size[1])
 
-    fig.savefig(os.path.join("fig", dataset) + ".pdf", bbox_inches='tight')
+    fig.savefig(os.path.join("fig", dataset) + f"_{walk}_greedy.pdf", bbox_inches='tight')
 
 
-def get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, ylim=None):
+def get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, walk, ylim=None):
 
     has_3_groups = NUM_GROUPS[dataset] == 3
 
@@ -106,14 +106,14 @@ def get_bar_plot_without_greedy(total_influence_results, disparity_results, data
 
     deepwalk_influence = total_influence_results["unweighted"]
     fairwalk_influence = total_influence_results["fairwalk"]
-    crosswalk_influence = total_influence_results["random_walk"]
+    crosswalk_influence = total_influence_results[walk]
 
     if not has_3_groups:
         adv_influence = total_influence_results["adv"]
 
     deepwalk_disparity = disparity_results["unweighted"]
     fairwalk_disparity = disparity_results["fairwalk"]
-    crosswalk_disparity = disparity_results["random_walk"]
+    crosswalk_disparity = disparity_results[walk]
 
     if not has_3_groups:
         adv_disparity = disparity_results["adv"]
@@ -148,7 +148,7 @@ def get_bar_plot_without_greedy(total_influence_results, disparity_results, data
     plt.yticks(fontsize=label_size)
     fig.set_size_inches(image_size[0], image_size[1])
 
-    fig.savefig(os.path.join("fig", dataset) + ".pdf", bbox_inches='tight')
+    fig.savefig(os.path.join("fig", dataset) + f"_{walk}_no_greedy.pdf", bbox_inches='tight')
 
 
 def read_txt_file(filename, dataset):
@@ -200,23 +200,36 @@ def read_txt_file(filename, dataset):
 def main(without_greedy):
     for dataset in DATASETS:
         result_files = os.listdir(os.path.join("results", dataset))
+        all_random_walks = {file.replace("_results.txt", "")[ : -2] for file in result_files if "random_walk" in file}
 
         total_influence_results = {}
         disparity_results = {}
 
         for method in METHODS:
             if method != "adv":
-                cur_files = [os.path.join("results", dataset, file) for file in result_files if method in file]
+                if method != "random_walk":
+                    cur_files = [os.path.join("results", dataset, file) for file in result_files if method in file]
 
-                all_results = []
-                for file in cur_files:
-                    results = read_txt_file(file, dataset)
-                    all_results.append(results)
+                    all_results = []
+                    for file in cur_files:
+                        results = read_txt_file(file, dataset)
+                        all_results.append(results)
 
-                all_results = np.mean( np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2), axis=2)
-                total_influence_results[method] = all_results[-1][0]
-                disparity_results[method] = all_results[-1][1]
-            elif dataset == "rice_subset" or dataset == "synth2":
+                    all_results = np.mean( np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2), axis=2)
+                    total_influence_results[method] = all_results[-1][0]
+                    disparity_results[method] = all_results[-1][1]
+                else:
+                    for walk in all_random_walks:
+                        cur_files = [os.path.join("results", dataset, file) for file in result_files if walk in file]
+                        all_results = []
+                        for file in cur_files:
+                            results = read_txt_file(file, dataset)
+                            all_results.append(results)
+
+                        all_results = np.mean( np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2), axis=2)
+                        total_influence_results[walk] = all_results[-1][0]
+                        disparity_results[walk] = all_results[-1][1]
+            elif NUM_GROUPS[dataset] == 2:
                 results_filename = os.path.join("results", dataset, "adv_results.txt")
 
                 with open(results_filename, "r") as r:
@@ -239,15 +252,16 @@ def main(without_greedy):
 
                 disparity_results[method] = disparity
                 total_influence_results[method] = total_influence
-
-        if without_greedy:
-            get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset)
-        else:
-            get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset)
+        for walk in disparity_results.keys():
+            if "random_walk" in walk:
+                if without_greedy:
+                    get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, walk)
+                else:
+                    get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset, walk)
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser("Synthesize Graph",
+    parser = ArgumentParser("Visualize results for influence maximization",
                             formatter_class=ArgumentDefaultsHelpFormatter,
                             conflict_handler='resolve')
 

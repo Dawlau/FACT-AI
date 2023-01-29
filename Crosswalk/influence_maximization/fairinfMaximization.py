@@ -75,7 +75,7 @@ def get_walking_method(args):
 
 if __name__ == '__main__':
 
-    parser = ArgumentParser("Synthesize Graph",
+    parser = ArgumentParser("Influence maximization",
                             formatter_class=ArgumentDefaultsHelpFormatter,
                             conflict_handler='resolve')
 
