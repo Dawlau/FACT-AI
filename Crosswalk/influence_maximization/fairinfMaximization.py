@@ -67,7 +67,7 @@ def get_walking_method(args):
     elif walking_algorithm == "random_walk":
         alpha = args.alpha
         p = args.exponent_p
-        return f"random_walk_{alpha}_bndry_0.1_exp_{p}"
+        return f"random_walk_5_bndry_{alpha}_exp_{p}"
     else:
         if not args.method == "greedy":
             raise Exception("Invalid walking algorithm")
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
     for i in range(1, 6):
         if method == "kmedoids":
-            embeddings_filename_path = os.path.join(ROOT_DIR, "data", dataset, f"embeddings_{get_walking_method(args)}_d32_{str(i)}")
+            embeddings_filename_path = os.path.join(ROOT_DIR, "data", dataset, f"{dataset}.embeddings_{get_walking_method(args)}_d32_{str(i)}")
             results_filename = os.path.join("results", dataset, f"{get_walking_method(args)}_{str(i)}")
 
             if os.path.exists(f"{results_filename}_results.txt"):

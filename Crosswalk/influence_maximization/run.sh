@@ -12,41 +12,41 @@ for dataset in ${datasets[@]}; do
 			--dataset $dataset \
 			--budget $budget
 
-	# echo "Done running the greedy algorithm for" $dataset
+	echo "Done running the greedy algorithm for" $dataset
 
-	# for walking_algorithm in "unweighted" "fairwalk"; do
+	for walking_algorithm in "unweighted" "fairwalk"; do
 
-	# 	python fairinfMaximization.py \
-	# 		--method kmedoids \
-	# 		--walking_algorithm $walking_algorithm \
-	# 		--dataset $dataset \
-	# 		--budget $budget
+		python fairinfMaximization.py \
+			--method kmedoids \
+			--walking_algorithm $walking_algorithm \
+			--dataset $dataset \
+			--budget $budget
 
-	# 	echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm" $walking_algorithm
-	# done
+		echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm" $walking_algorithm
+	done
 
 
-	# python fairinfMaximization.py \
-	# 	--method kmedoids \
-	# 	--walking_algorithm random_walk \
-	# 	--dataset $dataset \
-	# 	--alpha ${dataset_to_alpha[$dataset]} \
-	# 	--exponent_p ${dataset_to_p[$dataset]} \
-	# 	--budget $budget
+	python fairinfMaximization.py \
+		--method kmedoids \
+		--walking_algorithm random_walk \
+		--dataset $dataset \
+		--alpha ${dataset_to_alpha[$dataset]} \
+		--exponent_p ${dataset_to_p[$dataset]} \
+		--budget $budget
 
-	# echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm Crosswalk for parameters alpha" ${dataset_to_alpha[$dataset]} "and exponent" ${dataset_to_p[$dataset]}
-	
-	# if [ $dataset = "rice_subset" ] || [ $dataset = "synth2" ]; then
+	echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm Crosswalk for parameters alpha" ${dataset_to_alpha[$dataset]} "and exponent" ${dataset_to_p[$dataset]}
 
-	# 	attr_file=$(ls ${data}/${dataset} | grep ".attr")
-	# 	links_file=$(ls ${data}/${dataset} | grep ".links")
+	if [ $dataset = "rice_subset" ] || [ $dataset = "synth2" ]; then
 
-	# 	attr_file=${data}/${dataset}/${attr_file}
-	# 	links_file=${data}/${dataset}/${links_file}
+		attr_file=$(ls ${data}/${dataset} | grep "\.attr")
+		links_file=$(ls ${data}/${dataset} | grep "\.links")
 
-	# 	python aae.py \
-	# 		--attr_filename $attr_file \
-	# 		--links_filename $links_file \
-	# 		--dataset $dataset
-	# fi
+		attr_file=${data}/${dataset}/${attr_file}
+		links_file=${data}/${dataset}/${links_file}
+
+		python aae.py \
+			--attr_filename $attr_file \
+			--links_filename $links_file \
+			--dataset $dataset
+	fi
 done
