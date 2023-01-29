@@ -3,9 +3,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.semi_supervised import LabelPropagation
 from sklearn.metrics import pairwise_distances
 import numpy as np
-
+from argparse import ArgumentParser
+import warnings
+from tqdm import tqdm
+import os
 
 label_type = 'college' # 'college_2' # 'major' #
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def read_embeddings(emb_file):
     emb = dict()
@@ -50,27 +54,22 @@ def read_sensitive_attr(sens_attr_file, emb):
                 sens_attr[id] = int(s[1])
     return sens_attr
 
-if __name__ == '__main__':
-
+def classify(method, dataset, nfiles=5):
     res_total = []
     res_1_total = []
     res_0_total = []
     res_diff_total = []
     res_var_total = []
 
-    for iter in range(200):
+    runs = 200
 
-        # if np.mod(iter, 50) == 0:
-        #     print('iter: ', iter)
-        #run_i = 1 + np.random.choice(5)
-        print('iter: ', iter)
-        run_i = 1 + np.mod(iter, 5)
+    for iter in tqdm(range(runs)):
+        run_i = 1 + np.mod(iter, int(nfiles))
 
-        # emb_file = 'rice_subset/rice_subset.embeddings_unweighted_d32_' + str(run_i)
-        # emb_file = 'rice_subset/rice_subset.embeddings_random_walk_5_bndry_0.3_exp_1.0_d32_' + str(run_i)
-        emb_file = 'rice_subset/rice_subset.randomembedding_d32_' + str(run_i)
-        label_file = 'rice_subset/rice_raw.attr'
-        sens_attr_file = 'rice_subset/rice_sensitive_attr.txt'
+        filename = os.path.join(ROOT_DIR, "data", dataset)
+        emb_file = os.path.join(filename, f"{dataset}.embeddings_{method}_d32_{str(run_i)}")
+        label_file = os.path.join(filename, f"{dataset}.attr")
+        sens_attr_file = os.path.join(filename, f"{dataset}.attr")
 
         emb, dim = read_embeddings(emb_file)
         labels = read_labels(label_file, emb)
@@ -83,42 +82,14 @@ if __name__ == '__main__':
         X = np.zeros([n, dim])
         y = np.zeros([n])
         z = np.zeros([n])
-        for i, id in enumerate(emb):
-            X[i,:] = np.array(emb[id])
-            y[i] = labels[id]
-            z[i] = sens_attr[id]
-
-
-        '''
-        idx = None
-        cnt = 0
-        for c in np.unique(y):
-            if np.sum(y == c) >= 5:
-                if idx is None:
-                    idx = (y == c)
-                else:
-                    idx = idx | (y == c)
-
-        X = X[idx,:]
-        y = y[idx]
-        z = z[idx]
-        n = np.sum(idx)
-        '''
+        for i, id_ in enumerate(emb):
+            X[i,:] = np.array(emb[id_])
+            y[i] = labels[id_]
+            z[i] = sens_attr[id_]
 
         idx = np.arange(n)
         np.random.shuffle(idx)
         n_train = int(n // 2)
-        # n_train = int(n * 8 / 10)
-
-        # X_train = X[idx[:n_train], :]
-        # X_test = X[idx[n_train:], :]
-        # y_train = y[idx[:n_train]]
-        # y_test = y[idx[n_train:]]
-        # z_test = z[idx[n_train:]]
-
-        #########clf = LogisticRegression(multi_class='auto', solver='lbfgs').fit(X_train, y_train)
-        ######### clf = KNeighborsClassifier(n_neighbors=10).fit(X_train, y_train)
-
 
         X = X[idx,:]
         y = y[idx]
@@ -129,7 +100,7 @@ if __name__ == '__main__':
         y_test = y[n_train:]
         z_test = z[n_train:]
         g = np.mean(pairwise_distances(X))
-        clf = LabelPropagation(gamma = g).fit(X_train, y_train)
+        clf = LabelPropagation(gamma=g, max_iter=2000).fit(X_train, y_train)
 
         y_pred = clf.predict(X_test)
 
@@ -140,7 +111,6 @@ if __name__ == '__main__':
 
         idx_0 = (z_test == 0)
         res_0 = 100 * np.sum(y_pred[idx_0] == y_test[idx_0]) / np.sum(idx_0)
-
 
         res_diff = np.abs(res_1 - res_0)
         res_var = np.var([res_1, res_0])
@@ -157,9 +127,33 @@ if __name__ == '__main__':
     res_diff_avg = np.mean(np.array(res_diff_total), axis=0)
     res_var_avg = np.mean(np.array(res_var_total), axis=0)
 
-    # print('[', ', '.join([str(r) for r in res_avg]), ']')
-    # print('[', ', '.join([str(r) for r in res_1_avg]), ']')
-    # print('[', ', '.join([str(r) for r in res_0_avg]), ']')
-    # print('[', ', '.join([str(r) for r in res_diff_avg]), ']')
+    return res_avg, res_1_avg, res_0_avg, res_diff_avg, res_var_avg
 
-    print(res_avg, ', ', res_1_avg, ', ', res_0_avg, ', ', res_diff_avg, ', ', res_var_avg)
+def main(args):
+    method = args.method
+    nfiles = args.nfiles
+    dataset = args.dataset
+
+    results = classify(method, dataset, nfiles=nfiles)
+    results_filename = os.path.join("results", f"{dataset}_{method}.txt")
+
+    with open(results_filename, "w") as w:
+        w.write(str(results))
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument("--nfiles", default=5,
+                      help="set int for how many versions of each emb")
+    parser.add_argument("--warnings", default=True,
+                      help="set true for receiving warnings")
+    parser.add_argument("--method", help="Method used for embeddings")
+    parser.add_argument("--dataset", help="Dataset used")
+
+    args = parser.parse_args()
+
+    # turn warnings off by default
+    if args.warnings == False:
+        warnings.filterwarnings("ignore")
+
+    main(args)
