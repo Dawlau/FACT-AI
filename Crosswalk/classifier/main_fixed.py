@@ -66,7 +66,7 @@ def classify(method, ablation=False, nfiles=5):
         if ablation:
             emb_file = '../data/rice_subset/ablation/rice_subset.embeddings_' + method + '_' + str(run_i)
         else:
-            emb_file = '../data/rice_subset/rice_subset.embeddings_' + method + '_' + str(run_i)
+            emb_file = '../data/rice_subset/rice_subset.embeddings_' + method + '_' + 'd32_' + str(run_i)
         label_file = '../data/rice_subset/rice_subset.attr'
         sens_attr_file = '../data/rice_subset/rice_subset.attr'
 
@@ -89,7 +89,7 @@ def classify(method, ablation=False, nfiles=5):
         idx = np.arange(n)
         np.random.shuffle(idx)
         n_train = int(n // 2)
-        
+
         X = X[idx,:]
         y = y[idx]
         z = z[idx]
@@ -102,7 +102,7 @@ def classify(method, ablation=False, nfiles=5):
         clf = LabelPropagation(gamma = g, max_iter=2000).fit(X_train, y_train)
 
         y_pred = clf.predict(X_test)
-        
+
 
         res = 100 * np.sum(y_pred == y_test) / y_test.shape[0]
 
@@ -139,7 +139,7 @@ def main(args):
             print('ablation report for a ' + method + ': ', res)
             results[method] = np.array(res)
         # save results to file in dir
-        np.save('../data/rice_subset/ablation/results.npy', results) 
+        np.save('../data/rice_subset/ablation/results.npy', results)
     else:
         results = {}
         # classify for all methods (no ablation study of 'a')
@@ -148,7 +148,7 @@ def main(args):
             print('classification report for method ' + method + ': ', res)
             results[method] = np.array(res)
         # save results to file in dir
-        np.save('../data/rice_subset/results.npy', results) 
+        np.save('../data/rice_subset/results.npy', results)
 
 
 if __name__ == '__main__':
@@ -166,5 +166,4 @@ if __name__ == '__main__':
         warnings.filterwarnings("ignore")
 
     main(args)
-    
-    
+
