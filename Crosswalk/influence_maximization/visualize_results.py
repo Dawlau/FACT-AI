@@ -91,6 +91,7 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
     fig.set_size_inches(image_size[0], image_size[1])
 
     fig.savefig(os.path.join("fig", dataset) + f"_{walk}_greedy.pdf", bbox_inches='tight')
+    plt.close()
 
 
 def get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, walk, ylim=None):
@@ -149,6 +150,7 @@ def get_bar_plot_without_greedy(total_influence_results, disparity_results, data
     fig.set_size_inches(image_size[0], image_size[1])
 
     fig.savefig(os.path.join("fig", dataset) + f"_{walk}_no_greedy.pdf", bbox_inches='tight')
+    plt.close()
 
 
 def read_txt_file(filename, dataset):
@@ -249,14 +251,17 @@ def main(without_greedy):
 
                     total_influence = np.mean(influence_results)
                     disparity = np.mean(disparities)
+                    print(disparity)
 
                 disparity_results[method] = disparity
                 total_influence_results[method] = total_influence
+
         for walk in disparity_results.keys():
             if "random_walk" in walk:
                 if without_greedy:
                     get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, walk)
                 else:
+                    print(walk)
                     get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset, walk)
 
 
