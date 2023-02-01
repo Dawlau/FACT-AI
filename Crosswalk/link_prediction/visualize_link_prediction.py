@@ -30,7 +30,7 @@ yellow_ = '#F7CA18'
 
 
 
-def get_all_bar_plots(datasets, boundary_vals, exp_vals, df=df, save_path='figs'):
+def get_all_bar_plots(datasets, boundary_vals, exp_vals, df=df, save_path='fig'):
     label_size = 27
     font_size = 24
     image_size = (12, 8.5)
@@ -93,5 +93,4 @@ if __name__ == '__main__':
     boundary_vals = [0.5]#, 0.7, 0.9]
     # exp_vals = [1.0, 2.0]#, 3.0, 4.0]
     exp_vals = [2.0]#, 3.0, 4.0]
-
     get_all_bar_plots(datasets, boundary_vals, exp_vals)

@@ -1,0 +1,4 @@
+*.embedding* filter=lfs diff=lfs merge=lfs -text
+*embeddings* filter=lfs diff=lfs merge=lfs -text
+*trainlinks filter=lfs diff=lfs merge=lfs -text
+*testlinks filter=lfs diff=lfs merge=lfs -text

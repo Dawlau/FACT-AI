@@ -189,14 +189,10 @@ def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threa
     return accuracies
 
 if __name__ == '__main__':
-
-    datasets = ['rice_subset', 'twitter']#, 'synth2', 'synth3']
+    datasets = ['rice_subset', 'twitter']
     rwl = [5]
-
-    # bndries are referred to as alpha in the paper
     # bndries = [0.1, 0.5, 0.7, 0.9]
     bndries = [0.5]
-    # exponents are referred to as p in the paper
     # exponents = [1.0, 2.0, 4.0, 5.0, 8.0]
     exponents = [2.0]
     bndry_types = ['bndry']

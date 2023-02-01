@@ -140,3 +140,6 @@ Crosswalk/datahub
 *.npy
 *.png
 *.txt
+Crosswalk/datahub
+Crosswalk/data
+Crosswalk/notebooks

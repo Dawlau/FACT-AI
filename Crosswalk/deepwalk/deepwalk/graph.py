@@ -4,6 +4,7 @@
 """Graph utilities."""
 
 import logging
+import collections
 import sys
 from io import open
 from os import path
@@ -15,6 +16,7 @@ from collections import defaultdict, Iterable
 import random
 from random import shuffle
 from itertools import product,permutations
+from operator import itemgetter
 from scipy.io import loadmat
 from scipy.sparse import issparse
 import numpy as np
@@ -37,6 +39,9 @@ class Graph(defaultdict):
     self.attr = None
     # self.border_score = None
     self.border_distance = None
+
+    # regularization param
+    self.c = 1.0
 
   def nodes(self):
     return self.keys()
@@ -126,6 +131,52 @@ class Graph(defaultdict):
     "Returns the number of nodes in the graph"
     return self.order()
 
+  def soft_self_avoiding_random_walk(self, path_length, p_modified, alpha=0, rand=random.Random(), start=None,
+                                     c=1.0):
+    """ Returns a truncated, soft self-avoiding random walk.
+            The soft part means that the walk can allow for some self-intersection.
+
+            c: the regularization parameter for allowing; in [0, 1]
+                large c: fewer overlaps
+                small c: more overlaps
+            path_length: Length of the random walk.
+            alpha: probability of restarts.
+            start: the start node of the random walk.
+    """
+    del p_modified  # not needed
+    G = self
+    visited_edges = defaultdict(lambda: 0)  # [frozenset -> count]
+    if start:
+      path = [start]
+    else:
+      # Sampling is uniform w.r.t V, and not w.r.t E
+      path = [rand.choice(list(G.keys()))]
+    while len(path) < path_length:
+      # Get current node
+      current_node = path[-1]
+      if len(G[current_node]) > 0:
+        if rand.random() >= alpha:
+          if G.edge_weights is None:
+            next_node = rand.choice(G[current_node])
+          else:
+            outgoing_edges = [frozenset([current_node, neighbour]) for neighbour in G[current_node]]
+
+            counts = itemgetter(*outgoing_edges)(visited_edges)
+            if not isinstance(counts, tuple):
+              counts = (counts, )
+
+            discount_factor = [c ** count for count in counts]
+            edge_probabilities = np.multiply(G.edge_weights[current_node], discount_factor)
+            norm_probs = edge_probabilities / np.linalg.norm(edge_probabilities, ord=1)
+            next_node = np.random.choice(G[current_node], size=1, p=norm_probs)[0]
+        else:
+          next_node = path[0]
+        visited_edges[frozenset([current_node, next_node])] += 1
+        path.append(next_node)
+      else:
+        break
+    return [str(node) for node in path]
+
   def random_walk(self, path_length, p_modified, alpha=0, rand=random.Random(), start=None):
     """ Returns a truncated random walk.
 
@@ -206,7 +257,12 @@ def build_deepwalk_corpus(G, num_paths, path_length, p_modified, alpha=0,
   for cnt in range(num_paths):
     rand.shuffle(nodes)
     for node in nodes:
-      walks.append(G.random_walk(path_length, p_modified=p_modified, rand=rand, alpha=alpha, start=node))
+
+      if G.c < 1.0:
+        walks.append(G.soft_self_avoiding_random_walk(path_length, p_modified=p_modified, rand=rand, alpha=alpha, start=node,
+                                                      c=G.c))
+      else:
+        walks.append(G.random_walk(path_length, p_modified=p_modified, rand=rand, alpha=alpha, start=node))
 
   return walks
 
@@ -219,8 +275,12 @@ def build_deepwalk_corpus_iter(G, num_paths, path_length, p_modified, alpha=0,
   for cnt in range(num_paths):
     rand.shuffle(nodes)
     for node in nodes:
-      yield G.random_walk(path_length, p_modified=p_modified, rand=rand, alpha=alpha, start=node)
 
+      if G.c < 1.0:
+        yield G.soft_self_avoiding_random_walk(path_length, p_modified=p_modified, rand=rand, alpha=alpha, start=node,
+                                               c=G.c)
+      else:
+        yield G.random_walk(path_length, p_modified=p_modified, rand=rand, alpha=alpha, start=node)
 
 def clique(size):
     return from_adjlist(permutations(range(1,size+1)))

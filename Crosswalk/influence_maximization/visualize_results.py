@@ -55,19 +55,20 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
     crosswalk_disparity = disparity_results[walk]
     greedy_disparity = disparity_results["greedy"]
 
+
     if not has_3_groups:
         adv_disparity = disparity_results["adv"]
 
     fig, ax = plt.subplots()
 
-    ax.bar(xe[0], greedy_influence, bar_width, color=purple_, edgecolor='black', label='Total Influence Percentage')
+    # ax.bar(xe[0], greedy_influence, bar_width, color=purple_, edgecolor='black', label='Total Influence Percentage')
     ax.bar(xu[0], deepwalk_influence, bar_width, color=purple_, edgecolor='black')
     ax.bar(xf[0], fairwalk_influence, bar_width, color=purple_, edgecolor='black')
     ax.bar(xa[0], crosswalk_influence, bar_width, color=purple_, edgecolor='black')
     if not has_3_groups:
         ax.bar(xp[0], adv_influence, bar_width, color=purple_, edgecolor='black')
 
-    ax.bar(xe[1], greedy_disparity, bar_width, color=yellow_, edgecolor='black', label='Disparity')
+    # ax.bar(xe[1], greedy_disparity, bar_width, color=yellow_, edgecolor='black', label='Disparity')
     ax.bar(xu[1], deepwalk_disparity, bar_width, color=yellow_, edgecolor='black')
     ax.bar(xf[1], fairwalk_disparity, bar_width, color=yellow_, edgecolor='black')
     ax.bar(xa[1], crosswalk_disparity, bar_width, color=yellow_, edgecolor='black')
@@ -75,7 +76,7 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
         ax.bar(xp[1], adv_disparity, bar_width, color=yellow_, edgecolor='black')
 
     if ylim:
-        ax.set_ylim([0, ylim])
+        ax.set_ylim([0, 100])
 
     plt.legend(loc='upper right', prop={'size': legend_size})
 
@@ -171,8 +172,12 @@ def read_txt_file(filename, dataset):
             inf_a.append(float(info[2]))
             inf_b.append(float(info[4]))
 
+            # print('inf_a.append(float(info[2]))', float(info[2]))
+            # print('inf_b.append(float(info[4]))', float(info[4]))
+
             if has_3_groups:
                 inf_c.append(float(info[6]))
+                # print('inf_c.append(float(info[6]))', float(info[6]))
 
     inf_a, inf_b = np.array(inf_a), np.array(inf_b)
     if has_3_groups:
@@ -190,11 +195,23 @@ def read_txt_file(filename, dataset):
         frac_c = 100 * inf_c / n_c
 
     if has_3_groups:
-        var_fraction = np.var(np.concatenate( [frac_a.reshape([-1,1]), frac_b.reshape([-1,1]), frac_c.reshape([-1,1])], axis=1), axis=1)
+        var_fraction = np.var(np.concatenate([(100 * inf_a / n_a).reshape([-1, 1]),
+                                              (100 * inf_b / n_b).reshape([-1, 1]),
+                                              (100 * inf_c / n_c).reshape([-1, 1])],
+                                             axis=1), axis=1)
     else:
-        var_fraction = np.var(np.concatenate( [frac_a.reshape([-1,1]), frac_b.reshape([-1,1])], axis=1), axis=1)
+        var_fraction = np.var(np.concatenate([(100 * inf_a / n_a).reshape([-1, 1]),
+                                              (100 * inf_b / n_b).reshape([-1, 1])],
+                                             axis=1), axis=1)
 
-    results = np.concatenate([np.array(total_fraction).reshape([-1,1]), np.array(var_fraction).reshape([-1,1])], axis=1)
+    frac_a = 100 * inf_a / n_a
+    frac_b = 100 * inf_b / n_b
+
+    results = np.concatenate([np.array(total_fraction).reshape([-1, 1]),
+                              # np.array(frac_a).reshape([-1, 1]),
+                              # np.array(frac_b).reshape([-1, 1]),
+                              np.array(var_fraction).reshape([-1,1])],
+                             axis=1)
 
     return results
 
@@ -206,6 +223,8 @@ def main(without_greedy):
 
         total_influence_results = {}
         disparity_results = {}
+
+        print(result_files)
 
         for method in METHODS:
             if method != "adv":

@@ -1,11 +1,15 @@
 # Running parameters
-data=../data # Directory of the dataset.
+data=../datahub # Directory of the dataset.
 num_workers=10 # Number of parallel processes. (default: 1)
 num_walks=80 # Number of random walks to start at each node (default: 10)
 
-datasets=("rice_subset" "twitter")
+datasets=("synth2" "synth3" "synth3_extra" "synth5" "synthetic_3layers")
 exponent_values=(1.0 2.0 4.0 6.0 8.0)
 alpha_values=(0.1 0.3 0.5 0.7 0.9)
+
+#datasets=("synth2") #"synth3" "synth3_extra" "synth5" "synthetic_3layers")
+#exponent_values=(2.0 4.0)
+#alpha_values=(0.5)
 
 for i in {1..5}; do
   for dataset in ${datasets[@]}; do
@@ -29,7 +33,7 @@ for i in {1..5}; do
                         --representation-size 32 \
                         --walk-length 40 \
                         --window-size 10 \
-                        --workers $num_workers \
+                        --workers "$num_workers" \
                         --weighted $weighted  \
                         --output "$output_file" \
                         --sensitive-attr-file "$attr_file" \
@@ -57,7 +61,7 @@ for i in {1..5}; do
                   --representation-size 32 \
                   --walk-length 40 \
                   --window-size 10 \
-                  --workers $num_workers \
+                  --workers "$num_workers" \
                   --weighted "$method"  \
                   --output "$output_file" \
                   --sensitive-attr-file "$attr_file" \

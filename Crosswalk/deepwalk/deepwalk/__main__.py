@@ -67,6 +67,10 @@ def process(args):
     if (args.weighted is not None) and (args.weighted != 'unweighted'):
       G = graph.set_weights(G, args.weighted)
 
+      # addition luca: soft self-avoiding walks
+      if args.c < 1.0:
+        G.c = args.c
+
     # addition
     graph_filename = f'{args.input[:-6]}.embeddings_{args.weighted}_d{args.representation_size}.graph.out'
 
@@ -191,6 +195,9 @@ def main():
   parser.add_argument('--test-links', type=float, default=0., help='Portion of connections used as test data in link prediction.')
   parser.add_argument('--test-links-file', default=None, help='Name of the file of the test links')
   parser.add_argument('--train-links-file', default=None, help='Name of the file of the train links')
+
+  # Soft Self-avoiding random walks
+  parser.add_argument('--c', type=float, default=1., help='The regularization parameter for the soft self-avoiding RW.')
 
   args = parser.parse_args()
   numeric_level = getattr(logging, args.log.upper(), None)

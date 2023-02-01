@@ -1,6 +1,10 @@
-datasets=("rice_subset" "synth2" "synth3" "twitter")
+#! /bin/bash -l
+
+datasets=("rice_subset" ) #"synth2" "synth3" "twitter")
 data=../data
 budget=40
+exponent_values=(1.0 2.0 4.0 6.0 8.0)
+alpha_values=(0.1 0.3 0.5 0.7 0.9)
 
 declare -A dataset_to_alpha=(["rice_subset"]=0.5 ["synth2"]=0.7 ["synth3"]=0.7 ["twitter"]=0.5)
 declare -A dataset_to_p=(["rice_subset"]=4.0 ["synth2"]=4.0 ["synth3"]=4.0 ["twitter"]=2.0)

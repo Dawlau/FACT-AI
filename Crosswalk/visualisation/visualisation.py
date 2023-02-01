@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from collections import defaultdict
 
 import matplotlib
@@ -7,13 +8,19 @@ from matplotlib import pyplot as plt
 from pyvis.network import Network
 
 # Constants
-DATA = '../data'
+DATA = '../datahub'
 DATASETS = {
+    # Soft Self-avoiding random walk
+    'soft_synth2': '/soft_synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001',
+    'soft_synth3': '/soft_synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
+    'soft_rice_subset': '/soft_rice_subset/soft_rice_subset',
+
+    # Standard random walk algorithm
     'synth2': '/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001',
-    # 'rice_subset': '/rice_subset/rice_subset',  # takes a lot to render
+    'synth3': '/synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
+    'rice_subset': '/rice_subset/rice_subset',  # takes a lot to render
     # 'synthetic_3layers': '/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001',# color are not right
     # 'twitter': '/twitter/twitter',  # takes a lot to render
-    # 'synth3': '/synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
 }
 
 def parse_graph(dataset):
@@ -29,8 +36,8 @@ def parse_graph(dataset):
 def parse_walks(dataset, embedding, walks_visualised):
     # randomly sampling walks
     walks = []
-    num_lines = sum(1 for lines in open(DATA + DATASETS[dataset] + '.embeddings_' + embedding + '.walks.0'))
-    with open(DATA + DATASETS[dataset] + '.embeddings_' + embedding + '.walks.0') as walk_file:
+    num_lines = sum(1 for lines in open(DATA + "/" + dataset + "/" + dataset + '.embeddings_' + embedding + '.walks.0'))
+    with open(DATA + "/" + dataset + "/" + dataset + '.embeddings_' + embedding + '.walks.0') as walk_file:
         walks_idx = np.random.choice(num_lines, walks_visualised)
         for i, line in enumerate(walk_file):
             if i in walks_idx:
@@ -40,7 +47,7 @@ def parse_walks(dataset, embedding, walks_visualised):
 
 def get_graph_map(dataset, embedding):
     graph = defaultdict(float)
-    filename = DATA + DATASETS[dataset] + '.embeddings_' + embedding + '.graph.out'
+    filename = DATA + "/" + dataset + "/" + dataset + '.embeddings_' + embedding + '.graph.out'
     with open(filename, 'r') as graph_file:
         for line in graph_file:
             from_, to_, weight = line.split()
@@ -60,8 +67,6 @@ def colour_picker(value):
 def visualize_edge_weights(dataset, embedding):
     G = parse_graph(dataset)
     G_map = get_graph_map(dataset, embedding)
-    cmap = plt.cm.viridis
-    edge_weights = list(G_map.values())
     for edge in G_map.keys():
         # color = cmap(G_map[(edge[0], edge[1])]/max(edge_weights))
         color = colour_picker(G_map[(edge[0], edge[1])])
@@ -73,9 +78,8 @@ def visualize_edge_weights(dataset, embedding):
     net.from_nx(G)
     net.repulsion()
     net.show_buttons()
-    # net.toggle_physics(False)
     net.show(f"{dataset}_{embedding}_edge_vis.html")
-
+    net.toggle_physics(False)
 
 
 def visualize_walks(dataset, embedding, walks_visualised):
@@ -100,20 +104,36 @@ def visualize_walks(dataset, embedding, walks_visualised):
     # draw random walks on the graph.
     net.show_buttons()
     net.show(f"{dataset}_{embedding}.html")
+    net.toggle_physics(False)
+
+def main(args):
+    # dependency https://pypi.org/project/pyvis/: pip install pyvis
+    rw_method = f'random_walk_5_bndry_{args.alpha}_exp_{args.p}_d32_1'
+    srw_method = f'c{args.c}_random_walk_5_bndry_{args.alpha}_exp_{args.p}_d32_1'
+
+    print('Deepwalk')
+    # visualize_walks('synth2', 'unweighted_d32_1', 1)
+    # visualize_walks('synth3', 'unweighted_d32_1', 1)
+    # visualize_edge_weights('synth2', 'unweighted_d32')
+    # visualize_edge_weights('synth3', 'unweighted_d32')
+
+    print('CrossWalk using default random walks.')
+    # visualize_walks('synth2', rw_method, 1)
+    # visualize_walks('synth3', rw_method, 1)
+    # visualize_edge_weights('synth2', rw_method)
+    # visualize_edge_weights('synth3', rw_method)
+
+    print('CrossWalk using Soft Self-avoiding random walks.')
+    visualize_walks('soft_synth2', srw_method, 1)
+    # visualize_walks('soft_synth3', srw_method, 1)
 
 
 if __name__ == '__main__':
-    # dependency https://pypi.org/project/pyvis/: pip install pyvis
-    # run this while in directory /visualisation
+    parser = ArgumentParser()
+    parser.add_argument("--alpha", default=0.5, help="alpha param")
+    parser.add_argument("--p", default=1.0, help="exp param")
+    parser.add_argument("--c", default=0.3, help="regularization param")
 
-    for dataset in DATASETS:
-        visualize_walks(dataset, 'unweighted_d32', 1)
-        visualize_walks(dataset, 'random_walk_5_bndry_0.5_exp_2.0_d32', 1)
-        visualize_walks(dataset, 'random_walk_5_bndry_0.5_exp_4.0_d32', 1)
-
-        visualize_edge_weights(dataset, 'unweighted_d32')
-        visualize_edge_weights(dataset, 'random_walk_5_bndry_0.5_exp_2.0_d32')
-        visualize_edge_weights(dataset, 'random_walk_5_bndry_0.5_exp_4.0_d32')
-
-
+    args = parser.parse_args()
+    main(args)
 

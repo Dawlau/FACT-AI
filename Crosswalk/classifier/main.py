@@ -1,12 +1,13 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.semi_supervised import LabelPropagation
-from sklearn.metrics import pairwise_distances
+from sklearn.metrics import pairwise_distances, accuracy_score, confusion_matrix, classification_report
 import numpy as np
 from argparse import ArgumentParser
 import warnings
 from tqdm import tqdm
 import os
+import json
 
 label_type = 'college' # 'college_2' # 'major' #
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -66,10 +67,20 @@ def classify(method, dataset, nfiles=5):
     for iter in tqdm(range(runs)):
         run_i = 1 + np.mod(iter, int(nfiles))
 
-        filename = os.path.join(ROOT_DIR, "data", dataset)
+        filename = os.path.join(ROOT_DIR, "datahub", dataset)
         emb_file = os.path.join(filename, f"{dataset}.embeddings_{method}_d32_{str(run_i)}")
-        label_file = os.path.join(filename, f"{dataset}.attr")
-        sens_attr_file = os.path.join(filename, f"{dataset}.attr")
+        # emb_file = os.path.join(filename, f"rice_subset.embeddings_{method}_d32_{str(run_i)}")
+
+        attr_filename = f"{dataset}_sensitive_attr.txt"
+        label_filename = f"{dataset}_raw.txt"
+        # for (_, _, files) in os.walk(filename, topdown=False):
+        #     for file in files:
+        #         if file.endswith(".attr"):
+        #             attr_filename = file
+
+        # assert attr_filename is not None, f"No attribute filename found for {dataset}"
+        label_file = os.path.join(filename, label_filename)
+        sens_attr_file = os.path.join(filename, attr_filename)
 
         emb, dim = read_embeddings(emb_file)
         labels = read_labels(label_file, emb)
@@ -78,12 +89,11 @@ def classify(method, dataset, nfiles=5):
         assert len(labels) == len(emb) == len(sens_attr)
 
         n = len(emb)
-
         X = np.zeros([n, dim])
         y = np.zeros([n])
         z = np.zeros([n])
         for i, id_ in enumerate(emb):
-            X[i,:] = np.array(emb[id_])
+            X[i, :] = np.array(emb[id_])
             y[i] = labels[id_]
             z[i] = sens_attr[id_]
 
@@ -91,18 +101,37 @@ def classify(method, dataset, nfiles=5):
         np.random.shuffle(idx)
         n_train = int(n // 2)
 
-        X = X[idx,:]
+        # Shuffle the data
+        X = X[idx, :]
         y = y[idx]
         z = z[idx]
-        X_train = X
+
+        # luca: did modification
+        # X_train = X  # old
+        X_train = X[:n_train]  # new
+        # luca: did modification
+        # y_train = np.concatenate([y[:n_train], -1*np.ones([n-n_train])])  # old
+        y_train = y[:n_train]  # new
+
         X_test = X[n_train:]
-        y_train = np.concatenate([y[:n_train], -1*np.ones([n-n_train])])
         y_test = y[n_train:]
         z_test = z[n_train:]
+
+        # X_train = X[idx[:n_train], :]
+        # X_test = X[idx[n_train:], :]
+        # y_train = y[idx[:n_train]]
+        # y_test = y[idx[n_train:]]
+        # z_test = z[idx[n_train:]]
+
         g = np.mean(pairwise_distances(X))
         clf = LabelPropagation(gamma=g, max_iter=2000).fit(X_train, y_train)
 
         y_pred = clf.predict(X_test)
+
+        # print(classification_report(y_test, y_pred, target_names=['class 0', 'class 1'], digits=3))
+        # unique, counts = np.unique(y_train, return_counts=True)
+        # print(np.asarray((unique, counts)))
+        # print()
 
         res = 100 * np.sum(y_pred == y_test) / y_test.shape[0]
 
@@ -135,10 +164,11 @@ def main(args):
     dataset = args.dataset
 
     results = classify(method, dataset, nfiles=nfiles)
-    results_filename = os.path.join("results", f"{dataset}_{method}.txt")
-
+    result = {'total_acc': results[0], 'acc_1': results[1],
+              'acc_0': results[2], 'diff': results[3], 'disparity': results[4]}
+    results_filename = os.path.join("results", f"{dataset}_{method}.json")
     with open(results_filename, "w") as w:
-        w.write(str(results))
+        json.dump(result, w)
 
 
 if __name__ == '__main__':
