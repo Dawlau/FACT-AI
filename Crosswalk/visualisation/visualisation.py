@@ -70,8 +70,8 @@ def visualize_edge_weights(dataset, embedding):
     for edge in G_map.keys():
         color = colour_picker(G_map[(edge[0], edge[1])])
         G.add_edge(edge[0], edge[1],
-                   value=1,  # 5*G_map[(edge[0], edge[1])]
-                   color=color)  # matplotlib.colors.rgb2hex(color))
+                   value=1,
+                   color=color)
     net = Network()
     net.barnes_hut()
     net.from_nx(G)
@@ -119,8 +119,8 @@ def main(args):
     print('CrossWalk using default random walks.')
     visualize_walks('synth2', rw_method, 1)
     visualize_walks('synth3', rw_method, 1)
-    visualize_edge_weights('synth2', rw_method)
-    visualize_edge_weights('synth3', rw_method)
+    visualize_edge_weights('synth2', rw_method[:-2])
+    visualize_edge_weights('synth3', rw_method[:-2])
 
     print('CrossWalk using Soft Self-avoiding random walks.')
     visualize_walks('soft_synth2', srw_method, 1)
@@ -130,7 +130,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--alpha", default=0.5, help="alpha param")
-    parser.add_argument("--p", default=1.0, help="exp param")
+    parser.add_argument("--p", default=4.0, help="exp param")
     parser.add_argument("--c", default=0.3, help="statistics param")
 
     args = parser.parse_args()

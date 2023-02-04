@@ -1,11 +1,13 @@
 ''' File for testing different files in parallel'''
 from tqdm import tqdm
-from .config import infMaxConfig
-from .generalGreedy import *
+from config import infMaxConfig
+from generalGreedy import *
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 import os
 import time
+
+import utils as ut
 
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

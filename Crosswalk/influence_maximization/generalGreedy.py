@@ -1,6 +1,6 @@
-from .utils import read_files, graph_stats, write_files, plot_influence
-from .priorityQueue import PriorityQueue as PQ
-from .IC import *
+from utils import read_files, graph_stats, write_files, plot_influence
+from priorityQueue import PriorityQueue as PQ
+from IC import *
 import numpy as np
 import multiprocessing
 import math
@@ -16,7 +16,7 @@ def map_IC_timing(inp):
     F_a = 0.0
     F_b = 0.0
     if v not in S:
-        for j in range(R): # run R times Random Cascade
+        for j in range(R):  # run R times Random Cascade
         # for different objective change this priority selection
             T, T_a, T_b = runIC_fair_timings((G,S + [v], gamma_a, gamma_b))
             priority_a += float(T_a)/R

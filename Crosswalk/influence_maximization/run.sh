@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -l
 
 datasets=("rice_subset" "synth2" "synth3" "twitter")
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # Directory of script
@@ -12,7 +12,7 @@ declare -A dataset_to_p=(["rice_subset"]=4.0 ["synth2"]=4.0 ["synth3"]=4.0 ["twi
 
 for dataset in ${datasets[@]}; do
 
-	 python fairinfMaximization.py \
+	 python influence_maximization/fairinfMaximization.py \
 	 		--method greedy \
 	 		--dataset $dataset \
 	 		--budget $budget
@@ -21,7 +21,7 @@ for dataset in ${datasets[@]}; do
 
 	for walking_algorithm in "unweighted" "fairwalk"; do
 
-		python fairinfMaximization.py \
+		python influence_maximization/fairinfMaximization.py \
 			--method kmedoids \
 			--walking_algorithm $walking_algorithm \
 			--dataset $dataset \
@@ -31,7 +31,7 @@ for dataset in ${datasets[@]}; do
 	done
 
 
-	python fairinfMaximization.py \
+	python influence_maximization/fairinfMaximization.py \
 		--method kmedoids \
 		--walking_algorithm random_walk \
 		--dataset $dataset \
@@ -41,7 +41,7 @@ for dataset in ${datasets[@]}; do
 
 	echo "Done running the kmedoids algorithm for" $dataset "and walking algorithm Crosswalk for parameters alpha" ${dataset_to_alpha[$dataset]} "and exponent" ${dataset_to_p[$dataset]}
 
-	if [ $dataset = "rice_subset" ] || [ $dataset = "synth2" ]; then
+	if [ $dataset = "rice_subset" ] || [ $dataset = "synth2" ] || [ $dataset = "soft_rice_subset" ]; then
 
 		attr_file=$(ls ${data}/${dataset} | grep "\.attr")
 		links_file=$(ls ${data}/${dataset} | grep "\.links")
@@ -63,7 +63,7 @@ alpha_values=(0.1 0.3 0.5 0.7 0.9)
 for dataset in ${datasets[@]}; do
 	for alpha in ${alpha_values[@]}; do
 		for p in ${exponent_values[@]}; do
-			python fairinfMaximization.py \
+			python influence_maximization/fairinfMaximization.py \
 					--method kmedoids \
 					--walking_algorithm random_walk \
 					--dataset $dataset \

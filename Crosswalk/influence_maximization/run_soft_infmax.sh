@@ -8,7 +8,7 @@ alpha_values=(0.5 0.7)
 for dataset in ${datasets[@]}; do
 	for alpha in ${alpha_values[@]}; do
 		for p in ${exponent_values[@]}; do
-      python fairinfMaximization.py \
+      python influence_maximization/fairinfMaximization.py \
           --method kmedoids \
           --walking_algorithm soft_random_walk \
           --dataset $dataset \

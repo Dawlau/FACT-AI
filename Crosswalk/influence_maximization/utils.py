@@ -5,8 +5,8 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 plt.ioff()
 from operator import add
-from .generateGraph import generateGraphNPP
-from .load_facebook_graph import *
+from generateGraph import generateGraphNPP
+from load_facebook_graph import *
 from networkx.algorithms import community
 from sklearn_extra.cluster import KMedoids
 

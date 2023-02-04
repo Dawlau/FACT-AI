@@ -1,4 +1,6 @@
 import os
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 import json
@@ -7,8 +9,8 @@ from os.path import isfile, join
 from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-
-DATASETS = ["soft_rice_subset", "soft_synth2", "soft_synth3", "rice_subset", "synth2", "synth3"]
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATASETS = ["rice_subset", "synth2", "synth3"]
 METHODS = ["adv", "unweighted", "fairwalk", "random_walk", "greedy"]
 NUM_NODES_A = {"soft_rice_subset": 97, "soft_synth2": 150, "soft_synth3": 125,
                "rice_subset": 97, "synth2": 150, "synth3": 125, "twitter": 2598}
@@ -96,7 +98,8 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
     plt.yticks(fontsize=label_size)
     fig.set_size_inches(image_size[0], image_size[1])
 
-    fig.savefig(os.path.join("fig", dataset) + f"_{walk}_greedy.pdf", bbox_inches='tight')
+    fig.savefig(os.path.join(ROOT_DIR, "influence_maximization", "fig", dataset)
+                + f"_{walk}_greedy.pdf", bbox_inches='tight')
     plt.close()
 
 
@@ -221,13 +224,14 @@ def read_txt_file(filename, dataset):
 
 
 def plot_pareto_frontier(dataset, maxX=True, maxY=True):
-    data_paths = [data_path for data_path in listdir("results") if dataset in data_path]
+    result_dir = f'{ROOT_DIR}/influence_maximization/results/'
+    data_paths = [data_path for data_path in listdir(result_dir) if dataset in data_path]
     results = defaultdict(lambda: [[], []])
 
     for data_path in data_paths:
-        all_files = [join(f"results/{data_path}", file)
-                     for file in listdir(f"results/{data_path}")
-                     if isfile(join(f"results/{data_path}", file))
+        all_files = [join(f"{result_dir}/{data_path}", file)
+                     for file in listdir(f"{result_dir}/{data_path}")
+                     if isfile(join(f"{result_dir}/{data_path}", file))
                         and 'random_walk' in file]
         for file in all_files:
             inf, disp = read_txt_file(file, dataset)[-1]
@@ -274,8 +278,10 @@ def plot_pareto_frontier(dataset, maxX=True, maxY=True):
 
 
 def main(without_greedy):
+    result_dir = f'{ROOT_DIR}/influence_maximization/results/'
+
     for dataset in DATASETS:
-        result_files = os.listdir(os.path.join("results", dataset))
+        result_files = os.listdir(os.path.join(result_dir, dataset))
         all_random_walks = {file.replace("_results.txt", "")[: -2] for file in result_files if "random_walk" in file}
 
         total_influence_results = {}
@@ -286,7 +292,7 @@ def main(without_greedy):
         for method in METHODS:
             if method != "adv":
                 if method != "random_walk":
-                    cur_files = [os.path.join("results", dataset, file) for file in result_files if method in file]
+                    cur_files = [os.path.join(result_dir, dataset, file) for file in result_files if method in file]
 
                     all_results = []
                     for file in cur_files:
@@ -299,9 +305,8 @@ def main(without_greedy):
                     disparity_results[method] = all_results[-1][1]
                 else:
                     for walk in all_random_walks:
-                        cur_files = [os.path.join("results", dataset, file) for file in result_files if walk in file]
+                        cur_files = [os.path.join(result_dir, dataset, file) for file in result_files if walk in file]
                         all_results = []
-                        print('cur_files', cur_files)
                         for file in cur_files:
                             results = read_txt_file(file, dataset)
                             all_results.append(results)
@@ -311,7 +316,8 @@ def main(without_greedy):
                         total_influence_results[walk] = all_results[-1][0]
                         disparity_results[walk] = all_results[-1][1]
             elif NUM_GROUPS[dataset] == 2:
-                results_filename = os.path.join("results", dataset, "adv_results.txt")
+                results_filename = os.path.join(ROOT_DIR, 'influence_maximization',
+                                                "results", dataset, "adv_results.txt")
 
                 with open(results_filename, "r") as r:
                     results = json.load(r)
@@ -357,3 +363,4 @@ if __name__ == "__main__":
     # plot_pareto_frontier('synth3', maxX=False, maxY=True)
     # plot_pareto_frontier('rice_subset', maxX=False, maxY=True)
     main(args.without_greedy)
+    sys.exit(0)
