@@ -1,15 +1,14 @@
 # Running parameters
-data=../datahub # Directory of the dataset.
 num_workers=10 # Number of parallel processes. (default: 1)
 num_walks=80 # Number of random walks to start at each node (default: 10)
 
-datasets=("synth2" "synth3" "synth3_extra" "synth5" "synthetic_3layers")
+datasets=("synth2" "synth3" "synth3_extra" "synth5")
 exponent_values=(1.0 2.0 4.0 6.0 8.0)
 alpha_values=(0.1 0.3 0.5 0.7 0.9)
 
-#datasets=("synth2") #"synth3" "synth3_extra" "synth5" "synthetic_3layers")
-#exponent_values=(2.0 4.0)
-#alpha_values=(0.5)
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # Directory of script
+data=${SCRIPT_DIR}/../datahub # Directory of the dataset.
+
 
 for i in {1..5}; do
   for dataset in ${datasets[@]}; do
@@ -26,7 +25,7 @@ for i in {1..5}; do
       train_link_file="${data}/${dataset}/${dataset}_${weighted}_${i}_trainlinks"
 
       if ! [ -f "$output_file" ]; then
-        python deepwalk --format edgelist \
+        python ${SCRIPT_DIR}/deepwalk --format edgelist \
                         --input "$links_file" \
                         --max-memory-data-size 0 \
                         --number-walks $num_walks \
@@ -54,7 +53,7 @@ for i in {1..5}; do
         train_link_file="${data}/${dataset}/${dataset}_${method}_${i}_trainlinks"
 
         if ! [ -f "$output_file" ]; then
-          python deepwalk --format edgelist \
+          python ${SCRIPT_DIR}/deepwalk --format edgelist \
                   --input "$links_file" \
                   --max-memory-data-size 0 \
                   --number-walks $num_walks \

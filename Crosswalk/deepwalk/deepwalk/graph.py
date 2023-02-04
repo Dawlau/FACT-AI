@@ -40,7 +40,7 @@ class Graph(defaultdict):
     # self.border_score = None
     self.border_distance = None
 
-    # regularization param
+    # statistics param
     self.c = 1.0
 
   def nodes(self):
@@ -136,7 +136,7 @@ class Graph(defaultdict):
     """ Returns a truncated, soft self-avoiding random walk.
             The soft part means that the walk can allow for some self-intersection.
 
-            c: the regularization parameter for allowing; in [0, 1]
+            c: the statistics parameter for allowing; in [0, 1]
                 large c: fewer overlaps
                 small c: more overlaps
             path_length: Length of the random walk.
@@ -175,6 +175,7 @@ class Graph(defaultdict):
         path.append(next_node)
       else:
         break
+    del visited_edges
     return [str(node) for node in path]
 
   def random_walk(self, path_length, p_modified, alpha=0, rand=random.Random(), start=None):

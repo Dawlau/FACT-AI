@@ -2,12 +2,10 @@ from sklearn.linear_model import LogisticRegression
 import numpy as np
 import pickle
 import os
-import random
 from tqdm import tqdm
 import pandas as pd
 
-from multiprocessing import Process, Pool
-
+from multiprocessing import Pool
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -67,7 +65,7 @@ def extract_features(u,v):
 
 
 # run w synth2 after
-def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iters=6):
+def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iters=6, data_path='datahub'):
 
     if dataset in ('rice_subset', 'synth2'):
         all_labels = [0, 1]
@@ -78,12 +76,10 @@ def run_link_prediction(dataset, emb_type, rwl, bndrytype, bndry, exp, d, n_iter
     accuracy_keys = label_pairs + ['max_diff', 'var', 'total']
     accuracy = {k : [] for k in accuracy_keys}
     for iter in tqdm([str(k) for k in range(1,n_iters)]):
-        filename = os.path.join(ROOT_DIR, "data", dataset)
+        filename = os.path.join(ROOT_DIR, data_path, dataset)
 
         if emb_type == 'unweighted' or emb_type == 'fairwalk':
             full_method = emb_type
-            # test_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{dataset}_d{d}-test-{test_ratio}_{iter}.links'
-            # train_links_filepath = f'{filename}/{emb_type}/links/{emb_type}_{dataset}_d{d}-train-{test_ratio}_{iter}.links'
             test_links_filepath = f'{filename}/{dataset}_{emb_type}_{iter}_testlinks'
             train_links_filepath = f'{filename}/{dataset}_{emb_type}_{iter}_trainlinks'
         else:
@@ -188,13 +184,12 @@ def experiment_parameters(datasets, emb_type, r, bndrytype, bndry, exp, d, threa
                 accuracies.append(accuracy)
     return accuracies
 
+
 if __name__ == '__main__':
     datasets = ['rice_subset', 'twitter']
     rwl = [5]
-    # bndries = [0.1, 0.5, 0.7, 0.9]
-    bndries = [0.5]
-    # exponents = [1.0, 2.0, 4.0, 5.0, 8.0]
-    exponents = [2.0]
+    bndries = [0.1, 0.5, 0.7, 0.9]
+    exponents = [1.0, 2.0, 4.0, 6.0, 8.0]
     bndry_types = ['bndry']
     emb_types = ['random_walk', 'fairwalk', 'unweighted']
     ds = [32]

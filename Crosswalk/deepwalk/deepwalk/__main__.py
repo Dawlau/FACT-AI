@@ -197,7 +197,7 @@ def main():
   parser.add_argument('--train-links-file', default=None, help='Name of the file of the train links')
 
   # Soft Self-avoiding random walks
-  parser.add_argument('--c', type=float, default=1., help='The regularization parameter for the soft self-avoiding RW.')
+  parser.add_argument('--c', type=float, default=1., help='The statistics parameter for the soft self-avoiding RW.')
 
   args = parser.parse_args()
   numeric_level = getattr(logging, args.log.upper(), None)

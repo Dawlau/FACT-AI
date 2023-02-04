@@ -1,24 +1,15 @@
-import numpy as np
-import networkx as nx
-import math
 import os
-
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.lines import Line2D
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["axes.labelweight"] = "bold"
 
-from sklearn.cluster import KMeans
 import pandas as pd
-import numpy as np
 import matplotlib
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-df = pd.read_csv('link_prediction_results.csv', index_col=None)
-
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+df = pd.read_csv(f'{ROOT_DIR}/link_prediction/link_prediction_results.csv', index_col=None)
 
 red_ = '#fab3ac'
 blue_ = '#29a5e3'
@@ -51,7 +42,7 @@ def get_all_bar_plots(datasets, boundary_vals, exp_vals, df=df, save_path='fig')
                 acc_fairwalk = results[results['embedding_type'] == 'fairwalk'].to_dict('records')[0]
                 acc_unweighted = results[results['embedding_type'] == 'unweighted'].to_dict('records')[0]
 
-                fig_out_path = os.path.join(save_path, f'{dataset}_bndry_{boundary_val}_exp_{exp}.png')
+                fig_out_path = os.path.join(ROOT_DIR, 'link_prediction', save_path, f'{dataset}_bndry_{boundary_val}_exp_{exp}.png')
                 get_bar_plot(acc_proposed, acc_fairwalk, acc_unweighted, bar_width, font_size, label_size, image_size, y_lim, legend_size, fig_out_path)
 
 
@@ -89,8 +80,7 @@ def get_bar_plot(acc_proposed, acc_fairwalk, acc_unweighted, bar_width, fontsize
 
 
 if __name__ == '__main__':
-    datasets = ['rice_subset', 'twitter']#, 'synth2', 'synth3']
-    boundary_vals = [0.5]#, 0.7, 0.9]
-    # exp_vals = [1.0, 2.0]#, 3.0, 4.0]
-    exp_vals = [2.0]#, 3.0, 4.0]
+    datasets = ['rice_subset', 'twitter']
+    boundary_vals = [0.5]
+    exp_vals = [2.0]
     get_all_bar_plots(datasets, boundary_vals, exp_vals)

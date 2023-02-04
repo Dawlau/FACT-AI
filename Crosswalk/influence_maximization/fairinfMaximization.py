@@ -1,10 +1,7 @@
-''' File for testing different files in parallel
-'''
-
-from config import infMaxConfig
-from generalGreedy import *
-import utils as ut
-from IC import *
+''' File for testing different files in parallel'''
+from tqdm import tqdm
+from .config import infMaxConfig
+from .generalGreedy import *
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 import os
@@ -41,8 +38,7 @@ class fairInfMaximization(infMaxConfig):
 
         influenced, influenced_grouped = [], []
         seeds = []
-        for k in range(1, budget + 1):
-            print('--------', k)
+        for k in tqdm(range(1, budget + 1)):
             S = ut.get_kmedoids_centers(em, k, v)
 
             I, I_grouped = map_fair_IC((self.G, S))
@@ -68,9 +64,34 @@ def get_walking_method(args):
         alpha = args.alpha
         p = args.exponent_p
         return f"random_walk_5_bndry_{alpha}_exp_{p}"
+    elif walking_algorithm == "soft_random_walk":
+        c = args.c
+        alpha = args.alpha
+        p = args.exponent_p
+        return f"c{c}_random_walk_5_bndry_{alpha}_exp_{p}"
     else:
         if not args.method == "greedy":
             raise Exception("Invalid walking algorithm")
+
+
+def run_inf_max(args, i):
+    if method == "kmedoids":
+        embeddings_filename_path = os.path.join(ROOT_DIR, "datahub", dataset,
+                                                f"{dataset}.embeddings_{get_walking_method(args)}_d32_{str(i)}")
+        results_filename = os.path.join("results", dataset, f"{get_walking_method(args)}_{str(i)}")
+
+        if os.path.exists(f"{results_filename}_results.txt"):
+            return
+
+        fair_inf.test_kmedoids(embeddings_filename_path, results_filename, budget=budget)
+    else:
+        results_filename = os.path.join("results", dataset, str(i))
+
+        if os.path.exists(f"{results_filename}_greedy__results.txt"):
+            return
+
+        fair_inf.test_greedy(results_filename, budget=budget)
+
 
 
 if __name__ == '__main__':
@@ -81,10 +102,12 @@ if __name__ == '__main__':
 
     parser.add_argument('--method', type=str, help='The method for finding the most influential nodes')
     parser.add_argument('--dataset', type=str, help='The dataset for the current experiment')
+    parser.add_argument('--data_path', type=str, help='The dataset path for the current experiment', default='datahub')
     parser.add_argument('--walking_algorithm', type=str, help='The walking algorithm used', default="")
-    parser.add_argument('--alpha', type=float, help='The alpha coefficient in the Crosswalk algorithm', nargs='?', default=0)
-    parser.add_argument('--exponent_p', type=float, help='The exponent p used in the Crosswalk algorithm', nargs='?', default=0)
+    parser.add_argument('--alpha', type=float, help='The alpha coefficient in the Crosswalk algorithm', nargs='?', default=0.5)
+    parser.add_argument('--exponent_p', type=float, help='The exponent p used in the Crosswalk algorithm', nargs='?', default=1.0)
     parser.add_argument("--budget", type=int, help="The number of influencial nodes to pick", default=40)
+    parser.add_argument("--c", type=float, help='Regularization parameter', default=0.3, nargs='?')
 
     args = parser.parse_args()
 
@@ -100,7 +123,7 @@ if __name__ == '__main__':
 
     for i in range(1, 6):
         if method == "kmedoids":
-            embeddings_filename_path = os.path.join(ROOT_DIR, "data", dataset, f"{dataset}.embeddings_{get_walking_method(args)}_d32_{str(i)}")
+            embeddings_filename_path = os.path.join(ROOT_DIR, "datahub", dataset, f"{dataset}.embeddings_{get_walking_method(args)}_d32_{str(i)}")
             results_filename = os.path.join("results", dataset, f"{get_walking_method(args)}_{str(i)}")
 
             if os.path.exists(f"{results_filename}_results.txt"):

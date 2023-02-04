@@ -1,7 +1,8 @@
-#! /bin/bash -l
+#! /bin/bash
 
-datasets=("rice_subset" ) #"synth2" "synth3" "twitter")
-data=../data
+datasets=("rice_subset" "synth2" "synth3" "twitter")
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # Directory of script
+data=${SCRIPT_DIR}/../datahub # Directory of the dataset.
 budget=40
 exponent_values=(1.0 2.0 4.0 6.0 8.0)
 alpha_values=(0.1 0.3 0.5 0.7 0.9)
@@ -11,12 +12,12 @@ declare -A dataset_to_p=(["rice_subset"]=4.0 ["synth2"]=4.0 ["synth3"]=4.0 ["twi
 
 for dataset in ${datasets[@]}; do
 
-	# python fairinfMaximization.py \
-	# 		--method greedy \
-	# 		--dataset $dataset \
-	# 		--budget $budget
+	 python fairinfMaximization.py \
+	 		--method greedy \
+	 		--dataset $dataset \
+	 		--budget $budget
 
-	# echo "Done running the greedy algorithm for" $dataset
+	 echo "Done running the greedy algorithm for" $dataset
 
 	for walking_algorithm in "unweighted" "fairwalk"; do
 

@@ -1,17 +1,15 @@
 # Running parameters
-data=../datahub # Directory of the dataset.
 num_workers=10 # Number of parallel processes. (default: 1)
 num_walks=80 # Number of random walks to start at each node (default: 10)
 
 test_link_ratio=0.1
-datasets=("soft_synth2" "soft_synth3")
-#exponent_values=(1.0 2.0 4.0 6.0 8.0)
-#alpha_values=(0.5 0.7 0.9)
-#c_values=(0.2 0.3 0.35)
-
-exponent_values=(1.0 4.0 8.0)
-alpha_values=(0.5 0.7)
+datasets=("soft_rice_subset" "soft_synth2" "soft_synth3" "soft_synth5")
+exponent_values=(1.0 2.0 4.0 6.0 8.0)
+alpha_values=(0.5 0.7 0.9)
 c_values=(0.2 0.3 0.35)
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # Directory of script
+data=${SCRIPT_DIR}/../datahub # Directory of the dataset.
 
 for i in {1..5}; do
   # shellcheck disable=SC2068
@@ -29,14 +27,14 @@ for i in {1..5}; do
       train_link_file="${data}/${dataset}/${dataset}_${weighted}_${i}_trainlinks"
 
       if ! [ -f "$output_file" ]; then
-        python deepwalk --format edgelist \
+        python ${SCRIPT_DIR}/deepwalk --format edgelist \
                         --input "$links_file" \
                         --max-memory-data-size 0 \
                         --number-walks $num_walks \
                         --representation-size 32 \
                         --walk-length 40 \
                         --window-size 10 \
-                        --workers "$num_workers" \
+                        --workers $num_workers \
                         --weighted $weighted  \
                         --output "$output_file" \
                         --sensitive-attr-file "$attr_file" \
@@ -60,7 +58,7 @@ for i in {1..5}; do
 
           if ! [ -f "$output_file" ]; then
             echo "Running deepwalk: ${output_file}"
-            python deepwalk --format edgelist \
+            python ${SCRIPT_DIR}/deepwalk --format edgelist \
                     --input "$links_file" \
                     --max-memory-data-size 0 \
                     --number-walks $num_walks \

@@ -1,23 +1,23 @@
-from argparse import ArgumentParser
-from collections import defaultdict
-
-import matplotlib
+import os
 import networkx as nx
 import numpy as np
-from matplotlib import pyplot as plt
+
+from argparse import ArgumentParser
+from collections import defaultdict
 from pyvis.network import Network
 
 # Constants
-DATA = '../datahub'
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = os.path.join(ROOT_DIR, 'datahub')
 DATASETS = {
     # Soft Self-avoiding random walk
-    'soft_synth2': '/soft_synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001',
-    'soft_synth3': '/soft_synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
+    'soft_synth2': '/soft_synth2/soft_synth2',
+    'soft_synth3': '/soft_synth3/soft_synth3',
     'soft_rice_subset': '/soft_rice_subset/soft_rice_subset',
 
     # Standard random walk algorithm
-    'synth2': '/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001',
-    'synth3': '/synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
+    'synth2': '/synth2/synth2',
+    'synth3': '/synth3/synth3',
     'rice_subset': '/rice_subset/rice_subset',  # takes a lot to render
     # 'synthetic_3layers': '/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001',# color are not right
     # 'twitter': '/twitter/twitter',  # takes a lot to render
@@ -68,7 +68,6 @@ def visualize_edge_weights(dataset, embedding):
     G = parse_graph(dataset)
     G_map = get_graph_map(dataset, embedding)
     for edge in G_map.keys():
-        # color = cmap(G_map[(edge[0], edge[1])]/max(edge_weights))
         color = colour_picker(G_map[(edge[0], edge[1])])
         G.add_edge(edge[0], edge[1],
                    value=1,  # 5*G_map[(edge[0], edge[1])]
@@ -78,7 +77,7 @@ def visualize_edge_weights(dataset, embedding):
     net.from_nx(G)
     net.repulsion()
     net.show_buttons()
-    net.show(f"{dataset}_{embedding}_edge_vis.html")
+    net.show(f"results/{dataset}_{embedding}_edge_vis.html")
     net.toggle_physics(False)
 
 
@@ -103,7 +102,7 @@ def visualize_walks(dataset, embedding, walks_visualised):
 
     # draw random walks on the graph.
     net.show_buttons()
-    net.show(f"{dataset}_{embedding}.html")
+    net.show(f"results/{dataset}_{embedding}.html")
     net.toggle_physics(False)
 
 def main(args):
@@ -112,27 +111,27 @@ def main(args):
     srw_method = f'c{args.c}_random_walk_5_bndry_{args.alpha}_exp_{args.p}_d32_1'
 
     print('Deepwalk')
-    # visualize_walks('synth2', 'unweighted_d32_1', 1)
-    # visualize_walks('synth3', 'unweighted_d32_1', 1)
-    # visualize_edge_weights('synth2', 'unweighted_d32')
-    # visualize_edge_weights('synth3', 'unweighted_d32')
+    visualize_walks('synth2', 'unweighted_d32_1', 1)
+    visualize_walks('synth3', 'unweighted_d32_1', 1)
+    visualize_edge_weights('synth2', 'unweighted_d32')
+    visualize_edge_weights('synth3', 'unweighted_d32')
 
     print('CrossWalk using default random walks.')
-    # visualize_walks('synth2', rw_method, 1)
-    # visualize_walks('synth3', rw_method, 1)
-    # visualize_edge_weights('synth2', rw_method)
-    # visualize_edge_weights('synth3', rw_method)
+    visualize_walks('synth2', rw_method, 1)
+    visualize_walks('synth3', rw_method, 1)
+    visualize_edge_weights('synth2', rw_method)
+    visualize_edge_weights('synth3', rw_method)
 
     print('CrossWalk using Soft Self-avoiding random walks.')
     visualize_walks('soft_synth2', srw_method, 1)
-    # visualize_walks('soft_synth3', srw_method, 1)
+    visualize_walks('soft_synth3', srw_method, 1)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--alpha", default=0.5, help="alpha param")
     parser.add_argument("--p", default=1.0, help="exp param")
-    parser.add_argument("--c", default=0.3, help="regularization param")
+    parser.add_argument("--c", default=0.3, help="statistics param")
 
     args = parser.parse_args()
     main(args)

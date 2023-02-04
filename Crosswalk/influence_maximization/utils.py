@@ -5,12 +5,10 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 plt.ioff()
 from operator import add
-from generateGraph import generateGraphNPP
-import os
+from .generateGraph import generateGraphNPP
+from .load_facebook_graph import *
 from networkx.algorithms import community
-import numpy as np
 from sklearn_extra.cluster import KMedoids
-from load_facebook_graph import *
 
 def load_graph(filename, p_with, p_across,  group_ratio ,num_nodes ):
 	try:

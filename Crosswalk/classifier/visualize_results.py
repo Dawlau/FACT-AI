@@ -1,25 +1,15 @@
-from collections import defaultdict
-
-import numpy as np
-import networkx as nx
-import math
-from os import listdir
+import matplotlib
 import json
-import re
-from os.path import isfile, join
 import os
-
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.lines import Line2D
+
+from collections import defaultdict
+from os import listdir
+from os.path import isfile, join
+
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["axes.labelweight"] = "bold"
 
-from sklearn.cluster import KMeans
-import pandas as pd
-import numpy as np
-import matplotlib
 matplotlib.rcParams["pdf.fonttype"] = 42
 matplotlib.rcParams["ps.fonttype"] = 42
 
@@ -34,10 +24,11 @@ bar_width = 0.5
 legend_size = 25
 y_lim = [0, 175]
 
-DATASETS = ["rice_subset" "soft_rice_subset"]
+DATASETS = ["rice_subset", "soft_rice_subset"]
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_bar_plot(unweighted, fairwalk, rw_method, output_filename):
+def get_bar_plot(unweighted, fairwalk, rw_method, output_filename, soft=False):
 
     xu = [2 - bar_width, 2]
     xf = [5.5 - bar_width, 5.5]
@@ -56,7 +47,8 @@ def get_bar_plot(unweighted, fairwalk, rw_method, output_filename):
     # ax.set_ylim(y_lim)
     plt.legend(loc="upper right", prop={"size": legend_size})
 
-    plt.xticks([2, 5.5, 9], ["DeepWalk", "FairWalk", "CrossWalk"], fontsize=legend_size)
+    rw = "SSA CrossWalk" if soft else "CrossWalk"
+    plt.xticks([2, 5.5, 9], ["DeepWalk", "FairWalk", rw], fontsize=legend_size)
 
     # ax.set_axisbelow(True)
     ax.yaxis.grid(color="gray", linestyle="dashed")
@@ -71,12 +63,13 @@ def get_bar_plot(unweighted, fairwalk, rw_method, output_filename):
 
 def read_results_txt(filename):
     with open(filename, "r") as r:
-        # acc, _, _, _, var = r.readline().strip("(").strip(")").split(",")
         results = json.load(r)
         return [float(results["total_acc"]), float(results["disparity"])]
 
 def plot_pareto_frontier(dataset, maxX=True, maxY=True):
-    all_files = [join("results", file) for file in listdir("results") if isfile(join("results", file))]
+    result_dir = f'{ROOT_DIR}/classifier/results/'
+
+    all_files = [join(result_dir, file) for file in listdir(result_dir) if isfile(join(result_dir, file))]
     dataset_results_files = [file for file in all_files if dataset in file]
     results = defaultdict(lambda: [[], []])
 
@@ -121,37 +114,35 @@ def plot_pareto_frontier(dataset, maxX=True, maxY=True):
     plt.xlabel("Disparity")
     plt.ylabel("Accuracy")
     plt.legend()
-    plt.savefig(f'{dataset}_pareto_front.png')
+    plt.savefig(f'{ROOT_DIR}/classifier/{dataset}_pareto_front.png')
 
 
 def main():
-    all_files = [join("results", file) for file in listdir("results") if isfile(join("results", file))]
+    plot_pareto_frontier('rice_subset', maxX=False, maxY=True)
+    result_dir = f'{ROOT_DIR}/classifier/results/'
+
+    all_files = [join(result_dir, file) for file in listdir(result_dir) if isfile(join(result_dir, file))]
     for dataset in DATASETS:
         dataset_results_files = [file for file in all_files if dataset in file]
         unweighted_results_file = [file for file in dataset_results_files if "unweighted" in file][0]
-        # fairwalk_results_file = [file for file in dataset_results_files if "fairwalk" in file][0]
-        print(dataset_results_files)
-        random_walk_results_files = [file for file in dataset_results_files if "subset_random_walk" in file]
-        soft_results_file = [file for file in dataset_results_files if "_c0" in file]
+        fairwalk_results_file = [file for file in dataset_results_files if "fairwalk" in file][0]
+        soft = "soft" in dataset
 
-        print(soft_results_file)
-        print(random_walk_results_files)
+        if soft:
+            random_walk_results_files = [file for file in dataset_results_files if "_c0" in file]
+        else:
+            random_walk_results_files = [file for file in dataset_results_files if "subset_random_walk" in file]
 
         unweighted = read_results_txt(unweighted_results_file)
-        # fairwalk = read_results_txt(fairwalk_results_file)
+        fairwalk = read_results_txt(fairwalk_results_file)
 
-        for file_soft, file_rw in zip(soft_results_file, random_walk_results_files):
+        for file_rw in random_walk_results_files:
             output_filename = file_rw[ : -4] + "png"
             output_filename = output_filename.replace("results", "fig")
-            print(file_soft)
-            print(file_rw)
-            print()
             rw_method = read_results_txt(file_rw)
-            srw_method = read_results_txt(file_soft)
 
-            get_bar_plot(unweighted, srw_method, rw_method, output_filename)
+            get_bar_plot(unweighted, fairwalk, rw_method, output_filename, soft)
 
 
 if __name__ == "__main__":
-    plot_pareto_frontier('rice_subset', maxX=False, maxY=True)
     main()

@@ -1,23 +1,25 @@
 import json
-from argparse import ArgumentParser
-
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+from argparse import ArgumentParser
 
 from collections import defaultdict
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Constants
-DATA = '../datahub'
+DATA = os.path.join(ROOT_DIR, 'datahub')
 WALK_LENGTH = 40
 DATASETS = {
     # Soft Self-avoiding random walk
-    'soft_synth2': '/soft_synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001',
-    'soft_synth3': '/soft_synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
+    'soft_synth2': '/soft_synth2/soft_synth2',
+    'soft_synth3': '/soft_synth3/soft_synth3',
     'soft_rice_subset': '/soft_rice_subset/soft_rice_subset',
 
     # Standard random walk algorithm
-    'synth2': '/synth2/synthetic_n500_Pred0.7_Phom0.025_Phet0.001',
-    'synth3': '/synth3/synthetic_3g_n500_Pred0.6_Pblue0.25_Prr0.025_Pbb0.025_Pgg0.025_Prb0.001_Prg0.0005_Pbg0.0005',
+    'synth2': '/synth2/synth2',
+    'synth3': '/synth3/synth3',
     'rice_subset': '/rice_subset/rice_subset',  # takes a lot to render
     # 'synthetic_3layers': '/synthetic_3layers/synthetic_3layers_n500_Pred0.7_Phom0.025_Phet0.001',# color are not right
     # 'twitter': '/twitter/twitter',  # takes a lot to render
@@ -75,7 +77,7 @@ def generate_rw_statistics(dataset, embedding):
             crossings += 1 if crossing_condition else 0
         num_boundary_crossed.append(crossings)
 
-    with open(f'{dataset}_{embedding}_stats.json', 'w') as out_file:
+    with open(f'{ROOT_DIR}/statistics/{dataset}_{embedding}_stats.json', 'w') as out_file:
         result = {'walk_length': WALK_LENGTH,
                   'avg_visited': np.round(np.mean(nodes_visited), 2),
                   'avg_crossings': np.round(np.mean(num_boundary_crossed), 2)}
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--alpha", default=0.5, help="alpha param")
     parser.add_argument("--p", default=1.0, help="exp param")
-    parser.add_argument("--c", default=0.35, help="regularization param")
+    parser.add_argument("--c", default=0.35, help="statistics param")
 
     args = parser.parse_args()
     main(args)

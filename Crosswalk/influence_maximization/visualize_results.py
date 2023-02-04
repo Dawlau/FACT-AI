@@ -1,19 +1,25 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.lines import Line2D
 import json
+from os import listdir
+from os.path import isfile, join
+from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 
-DATASETS = ["rice_subset", "synth2", "synth3", "twitter"]
+DATASETS = ["soft_rice_subset", "soft_synth2", "soft_synth3", "rice_subset", "synth2", "synth3"]
 METHODS = ["adv", "unweighted", "fairwalk", "random_walk", "greedy"]
-NUM_NODES_A = {"rice_subset": 97, "synth2": 150, "synth3": 125, "twitter": 2598}
-NUM_NODES_B = {"rice_subset": 344, "synth2": 350, "synth3": 300, "twitter": 782}
-NUM_NODES_C = {"synth3": 75, "twitter": 180}
-NUM_GROUPS = {"rice_subset": 2, "synth2": 2, "synth3": 3, "twitter": 3}
+NUM_NODES_A = {"soft_rice_subset": 97, "soft_synth2": 150, "soft_synth3": 125,
+               "rice_subset": 97, "synth2": 150, "synth3": 125, "twitter": 2598}
+NUM_NODES_B = {"soft_rice_subset": 344, "soft_synth2": 350, "soft_synth3": 300,
+               "rice_subset": 344, "synth2": 350, "synth3": 300, "twitter": 78}
+NUM_NODES_C = {"synth3": 75, "twitter": 180,
+               "soft_synth2": 75}
+NUM_GROUPS = {"soft_rice_subset": 2, "soft_synth2": 2, "soft_synth3": 3,
+              "rice_subset": 2, "synth2": 2, "synth3": 3, "twitter": 3}
 
-n_seeds = np.arange(2,41,2)
+n_seeds = np.arange(2, 41, 2)
 red_ = '#fab3ac'
 blue_ = '#29a5e3'
 cyan_ = '#d2f0f7'
@@ -31,7 +37,6 @@ legend_size = 20
 
 
 def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset, walk, ylim=None):
-
     has_3_groups = NUM_GROUPS[dataset] == 3
 
     xe = [2 - bar_width, 2]
@@ -54,7 +59,6 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
     fairwalk_disparity = disparity_results["fairwalk"]
     crosswalk_disparity = disparity_results[walk]
     greedy_disparity = disparity_results["greedy"]
-
 
     if not has_3_groups:
         adv_disparity = disparity_results["adv"]
@@ -83,7 +87,8 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
     if has_3_groups:
         plt.xticks([2, 4, 6, 8], ['Greedy', 'DeepWalk', 'FairWalk', 'CrossWalk'], fontsize=legend_size)
     else:
-        plt.xticks([2, 4, 6, 8, 10], ['Greedy', 'DeepWalk', 'FairWalk', 'CrossWalk', 'Adversarial'], fontsize=legend_size)
+        plt.xticks([2, 4, 6, 8, 10], ['Greedy', 'DeepWalk', 'FairWalk', 'CrossWalk', 'Adversarial'],
+                   fontsize=legend_size)
 
     ax.yaxis.grid(color='gray', linestyle='dashed')
 
@@ -96,7 +101,6 @@ def get_bar_plot_with_greedy(total_influence_results, disparity_results, dataset
 
 
 def get_bar_plot_without_greedy(total_influence_results, disparity_results, dataset, walk, ylim=None):
-
     has_3_groups = NUM_GROUPS[dataset] == 3
 
     xe = [2 - bar_width, 2]
@@ -210,16 +214,69 @@ def read_txt_file(filename, dataset):
     results = np.concatenate([np.array(total_fraction).reshape([-1, 1]),
                               # np.array(frac_a).reshape([-1, 1]),
                               # np.array(frac_b).reshape([-1, 1]),
-                              np.array(var_fraction).reshape([-1,1])],
+                              np.array(var_fraction).reshape([-1, 1])],
                              axis=1)
 
     return results
 
 
+def plot_pareto_frontier(dataset, maxX=True, maxY=True):
+    data_paths = [data_path for data_path in listdir("results") if dataset in data_path]
+    results = defaultdict(lambda: [[], []])
+
+    for data_path in data_paths:
+        all_files = [join(f"results/{data_path}", file)
+                     for file in listdir(f"results/{data_path}")
+                     if isfile(join(f"results/{data_path}", file))
+                        and 'random_walk' in file]
+        for file in all_files:
+            inf, disp = read_txt_file(file, dataset)[-1]
+            if 'soft' in file:
+                results['ssa'][0].append(inf)
+                results['ssa'][1].append(disp)
+            else:
+                results['default'][0].append(inf)
+                results['default'][1].append(disp)
+
+    '''Pareto frontier selection process'''
+    for method in results.keys():
+        sorted_list = sorted([[results[method][1][i], results[method][0][i]]
+                              for i in range(len(results[method][0]))], reverse=maxX)
+        pareto_front = [sorted_list[0]]
+        for pair in sorted_list[1:]:
+            if maxY:
+                if pair[1] >= pareto_front[-1][1]:
+                    pareto_front.append(pair)
+            else:
+                if pair[1] <= pareto_front[-1][1]:
+                    pareto_front.append(pair)
+        results[method].append(pareto_front)
+
+    '''Plotting process'''
+    plt.scatter(results['default'][1], results['default'][0], color='gold', label='Default CrossWalk')
+    plt.scatter(results['ssa'][1], results['ssa'][0], color='skyblue', label='SSA CrossWalk')
+
+    pf_X_default = [pair[0] for pair in results['default'][2]]
+    pf_Y_default = [pair[1] for pair in results['default'][2]]
+
+    pf_X_ssa = [pair[0] for pair in results['ssa'][2]]
+    pf_Y_ssa = [pair[1] for pair in results['ssa'][2]]
+
+    plt.plot(pf_X_default, pf_Y_default, color='r', label='Default CrossWalk')
+    plt.plot(pf_X_ssa, pf_Y_ssa, color='g', label='SSA CrossWalk')
+
+    plt.title(f'Pareto Front of CrossWalk vs SSA CrossWalk candidates\nInfluence Maximization - {dataset} dataset')
+    plt.xlabel("Disparity")
+    plt.ylabel("Total Influence Percentage")
+    plt.legend()
+    plt.savefig(f'{dataset}_pareto_front.png')
+    plt.show()
+
+
 def main(without_greedy):
     for dataset in DATASETS:
         result_files = os.listdir(os.path.join("results", dataset))
-        all_random_walks = {file.replace("_results.txt", "")[ : -2] for file in result_files if "random_walk" in file}
+        all_random_walks = {file.replace("_results.txt", "")[: -2] for file in result_files if "random_walk" in file}
 
         total_influence_results = {}
         disparity_results = {}
@@ -236,18 +293,21 @@ def main(without_greedy):
                         results = read_txt_file(file, dataset)
                         all_results.append(results)
 
-                    all_results = np.mean( np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2), axis=2)
+                    all_results = np.mean(np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2),
+                                          axis=2)
                     total_influence_results[method] = all_results[-1][0]
                     disparity_results[method] = all_results[-1][1]
                 else:
                     for walk in all_random_walks:
                         cur_files = [os.path.join("results", dataset, file) for file in result_files if walk in file]
                         all_results = []
+                        print('cur_files', cur_files)
                         for file in cur_files:
                             results = read_txt_file(file, dataset)
                             all_results.append(results)
 
-                        all_results = np.mean( np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2), axis=2)
+                        all_results = np.mean(
+                            np.concatenate([np.expand_dims(result, 2) for result in all_results], axis=2), axis=2)
                         total_influence_results[walk] = all_results[-1][0]
                         disparity_results[walk] = all_results[-1][1]
             elif NUM_GROUPS[dataset] == 2:
@@ -289,6 +349,11 @@ if __name__ == "__main__":
                             formatter_class=ArgumentDefaultsHelpFormatter,
                             conflict_handler='resolve')
 
-    parser.add_argument('--without_greedy', action="store_true", help='Flag that specifies whether to use greedy or not', default=False)
+    parser.add_argument('--without_greedy', action="store_true",
+                        help='Flag that specifies whether to use greedy or not', default=False)
     args = parser.parse_args()
+
+    # plot_pareto_frontier('synth2', maxX=False, maxY=True)
+    # plot_pareto_frontier('synth3', maxX=False, maxY=True)
+    # plot_pareto_frontier('rice_subset', maxX=False, maxY=True)
     main(args.without_greedy)

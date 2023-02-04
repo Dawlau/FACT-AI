@@ -1,9 +1,8 @@
-
-from priorityQueue import PriorityQueue as PQ
-from IC import *
+from .utils import read_files, graph_stats, write_files, plot_influence
+from .priorityQueue import PriorityQueue as PQ
+from .IC import *
 import numpy as np
 import multiprocessing
-import utils as ut
 import math
 
 
@@ -296,8 +295,6 @@ def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=
     elif type_algo == 4:
         filename = filename + f'_root_majority_gamma_{gamma}_beta_{beta}_'
 
-    # stats = ut.graph_stats(G, print_stats=False)
-
     seed_range = range(budget)
 
     # add node to S if achieves maximum propagation for current chosen + this node
@@ -337,121 +334,9 @@ def generalGreedy_node_parallel(filename, G, budget, gamma, beta=1.0, type_algo=
             S_g[c].append(n)
 
         seeds.append(S_g)  # id's of the seeds so the influence can be recreated
-        # print(i, k, time.time() - start)
-    # print ( "\n \n  I shouldn't be here.   ********* \n \n ")
-    # ut.plot_influence(influenced_a, influenced_b, len(S), filename, stats['group_a'], stats['group_b'],
-    #                   [len(S_a) for S_a in seeds_a], [len(S_b) for S_b in seeds_b])
-
-    ut.write_files(filename, influenced, influenced_grouped, seeds)
+    write_files(filename, influenced, influenced_grouped, seeds)
 
     return (influenced, influenced_grouped, seeds)
-
-
-# def generalGreedy_node_parallel(filename, G, budget, gamma, beta = 1.0, type_algo = 1):
-#     ''' Finds initial seed set S using general greedy heuristic
-#     Input: G -- networkx Graph object
-#     k -- number of initial nodes needed
-#     p -- propagation probability
-#     Output: S -- initial set of k nodes to propagate
-#     '''
-#     #import time
-#     #start = time.time()
-#     #R = 200 # number of times to run Random Cascade
-#     S = [] # set of selected nodes
-#     influenced = []
-#     influenced_a = []
-#     influenced_b = []
-#     seeds_a = []
-#     seeds_b = []
-#     seed_range = []
-#     if  type_algo == 1:
-#             filename = filename + f'_greedy_'
-#
-#     elif type_algo == 2:
-#             filename = filename + f'_log_gamma_{gamma}_'
-#
-#     elif type_algo == 3:
-#              filename = filename + f'_root_gamma_{gamma}_beta_{beta}_'
-#
-#     elif type_algo == 4:
-#              filename = filename + f'_root_majority_gamma_{gamma}_beta_{beta}_'
-#
-#
-#     stats = ut.graph_stats(G, print_stats = False)
-#
-#     try :
-#
-#         influenced, influenced_a, influenced_b, seeds_a, seeds_b = ut.read_files(filename)
-#         S = seeds_a[-1] + seeds_b[-1]
-#
-#         if len(S) >= budget:
-#             #ut.write_files(filename,influenced, influenced_a, influenced_b, seeds_a, seeds_b)
-#             print(influenced_a)
-#             print( "\n\n")
-#             print(influenced_b)
-#             print(" Seed length ", len(S))
-#
-#             ut.plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
-#
-#             return (influenced, influenced_a, influenced_b, seeds_a, seeds_b)
-#         else:
-#             seed_range = range(budget - len(S))
-#
-#     except FileNotFoundError:
-#         print( f'{filename} not Found ')
-#
-#         seed_range = range(budget)
-#
-#     # add node to S if achieves maximum propagation for current chosen + this node
-#     for i in seed_range: # cannot parallellize
-#         print('--------', i)
-#         pool = multiprocessing.Pool(multiprocessing.cpu_count())
-#         #results = None
-#         if type_algo == 1:
-#             results = pool.map(map_select_next_seed_greedy, ((G,S,v) for v in G.nodes()))
-#         elif type_algo == 2:
-#             results = pool.map(map_select_next_seed_log_greedy, ((G,S,v,gamma) for v in G.nodes()))
-#         elif type_algo == 3:
-#             results = pool.map(map_select_next_seed_root_greedy, ((G,S,v,gamma,beta) for v in G.nodes()))
-#         elif type_algo == 4:
-#             results = pool.map(map_select_next_seed_root_majority_greedy, ((G,S,v,gamma) for v in G.nodes()))
-#
-#
-#         pool.close()
-#         pool.join()
-#
-#         s = PQ() # priority queue
-#         #if results == None:
-#
-#         for v,priority in results: # run R times Random Cascade The gain of parallelizing isn't a lot as the one runIC is not very complex maybe for huge graphs
-#                     s.add_task(v, priority)
-#
-#         node, priority = s.pop_item()
-#         S.append(node)
-#         I,I_a, I_b = map_fair_IC((G,S))
-#         influenced.append(I)
-#         influenced_a.append(I_a)
-#         influenced_b.append(I_b)
-#         S_red  = []
-#         S_blue = []
-#         group = G.nodes[node]['color']
-#         print(f'{i+1} Selected Node is {node} group {group} Ia = {I_a} Ib {I_b}')
-#         for n in S:
-#             if G.nodes[n]['color'] == 'red':
-#                 S_red.append(n)
-#             else:
-#                 S_blue.append(n)
-#
-#         seeds_a.append(S_red) # id's of the seeds so the influence can be recreated
-#         seeds_b.append(S_blue)
-#         #print(i, k, time.time() - start)
-#     #print ( "\n \n  I shouldn't be here.   ********* \n \n ")
-#     ut.plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
-#
-#     ut.write_files(filename,influenced, influenced_a, influenced_b, seeds_a, seeds_b)
-#
-#
-#     return (influenced, influenced_a, influenced_b, seeds_a, seeds_b)
 
 def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 0, type_algo = 1):
     ''' Finds initial seed set S using general greedy heuristic
@@ -460,12 +345,8 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
     p -- propagation probability
     Output: S -- initial set of k nodes to propagate
     '''
-    #import time
-    #start = time.time()
-    #R = 200 # number of times to run Random Cascade
 
-
-    stats = ut.graph_stats(G, print_stats = False)
+    stats = graph_stats(G, print_stats = False)
 
     if  type_algo == 1:
             filename = filename + f'_set_cover_reach_{budget}_'
@@ -486,16 +367,15 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
 
     try :
 
-        influenced, influenced_a, influenced_b, seeds_a, seeds_b = ut.read_files(filename)
+        influenced, influenced_a, influenced_b, seeds_a, seeds_b = read_files(filename)
         reach = min(influenced_a[-1]/stats['group_a'],budget) + min(influenced_b[-1]/stats['group_b'],budget)
         S = seeds_a[-1] + seeds_b[-1]
         if reach >= budget:
-            #ut.write_files(filename,influenced, influenced_a, influenced_b, seeds_a, seeds_b)
             print(influenced_a)
             print( "\n\n")
             print(influenced_b)
             print(f" reach: {reach}")
-            ut.plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
+            plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
             return (influenced, influenced_a, influenced_b, seeds_a, seeds_b)
 
     except FileNotFoundError:
@@ -550,9 +430,8 @@ def generalGreedy_node_set_cover(filename, G, budget, gamma_a = 1e-2, gamma_b = 
         #print(i, k, time.time() - start)
         i+=1
 
-    ut.plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
-
-    ut.write_files(filename,influenced, influenced_a, influenced_b, seeds_a, seeds_b)
+    plot_influence(influenced_a, influenced_b, len(S), filename , stats['group_a'], stats['group_b'], [len(S_a) for S_a in seeds_a] , [len(S_b) for S_b in seeds_b])
+    write_files(filename, influenced, influenced_a, influenced_b, seeds_a, seeds_b)
 
     return (influenced, influenced_a, influenced_b, seeds_a, seeds_b)
 
